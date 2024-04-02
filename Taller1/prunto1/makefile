@@ -1,17 +1,14 @@
-all: compile link gnu 
+all: py 
 
-compile:
+compile.x:
 	g++ -O3 Modelosir_A.cpp -o Modelosir_A.x
-	g++ Modelosir_C.cpp -o C.x
+	g++ -O3 Modelosir_C.cpp -o C.x
 
-link: 
+dat.x: compile.x
 	Modelosir_A.x > datos.dat
 	C.x
 
-gnu:
-	gnuplot  -p grafic.gp
-	gnuplot  -p grafic3.gp
-	rm -f *.o *.exe *.dat
-
-clean:
-	del/ -f *.x *.dat *.pdf
+py:dat.x
+	python grafica_C.py datos_C.dat
+	python Modelosir_B.py Coronavirus_Colombia_y_Bogota.xlsx datos.dat
+	del -f *.o *.x
