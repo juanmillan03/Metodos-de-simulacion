@@ -8,9 +8,10 @@ Velocidad relativa de contacto, V traslacion y rotacional
 #include<fstream>
 #include<cmath>
 #include "vector.h"
+#include <string>
 #include "Random64.h"
 
-const double Lx=205,Ly=60;
+const double Lx=160,Ly=60;
 const int N=200,Ns=80,Ntot=N+Ns+3;
 const double g=9.8;
 const double Khertz=1.0e4;
@@ -62,8 +63,11 @@ public:
 
 };
 int main(){
-    std::ofstream outfile;
-    outfile.open("mu205.dat");
+    std::ofstream outfile("mu_experimental.dat", std::ios::app);
+    if (!outfile) {
+        std::cerr << "No se pudo abrir el archivo: " << "mu_experimental.dat" << std::endl;
+        return 1;
+    }
     molecule moleculas[Ntot];
     colisionador hertz;
     Crandom ran64(26);
@@ -134,7 +138,7 @@ int main(){
         if (ymax<moleculas[i].gety()){ymax=moleculas[i].gety();xymax=moleculas[i].getx();}
     }
     tang=(ymax/std::fabs(Lx/2.0-xmin)+ymax/std::fabs(Lx/2.0-xmax))/2;
-    outfile<<tang<<" "<<Nlive;
+    outfile<<Lx<<" "<<tang<<std::endl;
     return 0;
 }
 // -----------------------------FUncion molecule
@@ -222,7 +226,7 @@ void colisionador::CalculeFuerzaEntre(molecule & molecula1, molecule & molecula2
 }
 void InicieAnimacion(void){
     std::cout<<"set terminal gif animate"<<std::endl; 
-    std::cout<<"set output 'Arena205.gif'"<<std::endl;
+    std::cout<<"set output 'gif/Arena"<<Lx<<".gif'"<<std::endl;
     std::cout<<"unset key"<<std::endl;
     std::cout<<"set grid"<<std::endl;
     std::cout<<"set xrange[-10:"<<Lx+10<<"]"<<std::endl;
