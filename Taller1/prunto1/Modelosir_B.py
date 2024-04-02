@@ -17,7 +17,7 @@ def Punto_B(data_path):
     plt.ylabel("Factor de infectados")
     plt.grid()
     plt.title("Factor de infectados contra los Días")
-    plt.savefig("Modelosir_C.pdf")
+    plt.savefig("Modelosir_B.pdf")
     print("----------------------------------\n")
 
     print("Elegimos el día de inicio de la pandemia")

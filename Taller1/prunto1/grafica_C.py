@@ -17,7 +17,7 @@ def Punto_C(data_path):
     ax.grid()
     ax.legend()
     plt.title("SIR sin muertes ni nacimentos")
-    plt.savefig("modelosir_C.pdf")
+    plt.savefig("Modelosir_C.pdf")
 
 
 
