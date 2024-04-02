@@ -10,7 +10,7 @@ def Punto_C(data_path):
     fig, ax = plt.subplots( )
     ax.scatter(datos_rales['t'],datos_rales['i'],label="Reales",s=1,c="r")
     ax.plot(datos['t'],datos['i'],label="Simulados", linestyle='-.')
-    ax.set_xticks(np.linspace(0, 300,8))
+    ax.set_xticks(np.linspace(0, 300,9))
     ax.set_xlabel("Tiempo(Díaz)")
     ax.set_ylabel("Infectados ")
     ax.grid()
