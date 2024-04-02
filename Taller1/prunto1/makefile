@@ -1,12 +1,12 @@
 all: compile link gnu 
 
 compile:
-	g++ -O3 Modelosir_A.cpp -o A.exe
-	g++ Modelosir_C.cpp -o C.exe
+	g++ -O3 Modelosir_A.cpp -o Modelosir_A.x
+	g++ Modelosir_C.cpp -o C.x
 
 link: 
-	./A.exe > datos.dat
-	./C.x
+	Modelosir_A.x > datos.dat
+	C.x
 
 gnu:
 	gnuplot  -p grafic.gp
@@ -14,4 +14,4 @@ gnu:
 	rm -f *.o *.exe *.dat
 
 clean:
-	rm -f  *.exe *.dat *.pdf
+	del/ -f *.x *.dat *.pdf
