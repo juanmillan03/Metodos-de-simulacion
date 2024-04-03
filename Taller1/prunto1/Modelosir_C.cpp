@@ -6,12 +6,14 @@ const double i0=5.326666666666667e-05;
 const double s0= 1.0-i0;
 const double a= 1.035900845530171;
 const double ERR=1.0e-6;
+double funcion_gamma(double gamma){return max_modelosir(gamma)-162;}
+
 double s_t(double t, double i, double s,double beta);
 double i_t(double t, double i, double s,double beta, double gamma);
 void  stepRungekutta4_dos(double & t,double & s,double & i,double  dt,double beta, double gamma);
 double max_modelosir(double gamma);
-double funcion_gamma(double gamma){return max_modelosir(gamma)-162;}
 // void  stepRungekutta4(double & t,double & r,double i,double & dt);
+
 int main(){
     std::ofstream outfile;
     outfile.open("datos_C.dat");
@@ -46,7 +48,7 @@ int main(){
 
 }
 double s_t(double t, double i, double s,double beta){
-    return (-1)*beta*s*i;
+    return (-1.0)*beta*s*i;
 }
 double i_t(double t, double i, double s,double beta, double gamma){
     return beta*s*i-(gamma*i);
@@ -66,9 +68,7 @@ double max_modelosir(double gamma){
     double t,r,imax=0;
     double s=s0,i=i0;
     double beta=gamma+std::log(a);
-    double dt=1;
-    double tmax=0;
-    int T=300;
+    double dt=1,tmax=0;int T=300;
    for (t=0;t<T;){
     if(imax<i){
         imax=i;

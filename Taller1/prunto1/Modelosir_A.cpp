@@ -23,7 +23,7 @@ int main(){
     return 0;
 }
 double s_t(double t, double i, double s){
-    return (-1)*beta*s*i;
+    return (-1.0)*beta*s*i;
 }
 double i_t(double t, double i, double s){
     return beta*s*i-(Gamma*i);

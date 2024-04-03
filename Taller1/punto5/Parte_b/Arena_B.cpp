@@ -9,8 +9,10 @@ Velocidad relativa de contacto, V traslacion y rotacional
 #include<cmath>
 #include "vector.h"
 #include "Random64.h"
+#include <string>
 
-const double Lx=155,Ly=60;
+
+const double Ly=60;
 const int N=200,Ns=80,Ntot=N+Ns+3;
 const double g=9.8;
 const double Khertz=1.0e4;
@@ -26,8 +28,8 @@ const double Um2chiplusxi=1.0-2*(chi*xi);
 class molecule; 
 class colisionador;
 // ---------------------------------------
-void InicieAnimacion(void);
-void InicieCuadro(void);
+void InicieAnimacion(double Lx);
+void InicieCuadro(double Lx);
 void TermineCuadro(void);
 // --------------------------------------
 
@@ -61,9 +63,17 @@ public:
     double & xCundall,double & sold,double dt);
 
 };
-int main(){
-    std::ofstream outfile;
-    outfile.open("mu155.dat");
+int main(int argc, char **argv){
+    if (argc!=2){
+        std::cout<<"Usage: Meter el valor Lx "<<std::endl;
+        return 1;
+    }
+    const double Lx = std::atof(argv[1]);
+    std::ofstream outfile("mu_experimental.dat", std::ios::app);
+    if (!outfile) {
+        std::cerr << "No se pudo abrir el archivo: " << "mu_experimental.dat" << std::endl;
+        return 1;
+    }
     molecule moleculas[Ntot];
     colisionador hertz;
     Crandom ran64(26);
@@ -79,7 +89,7 @@ int main(){
     double Rpared=100*Lx,Mpared=100*m0,Rs=Lx/(2*Ns);
  
 
-    InicieAnimacion();
+    InicieAnimacion(Lx);
     for(int i=0;i<Ns;i++){
 //   Grano[N+1].Inicie(Lx/2,  -Rpared,  0,  0,     0,     0,Mpared,Rpared); //Pared abajo
         moleculas[N+i].inicie(Rs*(2*i+1),0,0,0,0,0,Mpared,Rs);
@@ -103,7 +113,7 @@ int main(){
             ++Nlive;
         }
         if(tdibujo>Tcuadro){
-            InicieCuadro();
+            InicieCuadro(Lx);
             for (int i = 0; i<N+Ns; i++)moleculas[i].Dibujese();    
             TermineCuadro();
             tdibujo=0; 
@@ -221,9 +231,9 @@ void colisionador::CalculeFuerzaEntre(molecule & molecula1, molecule & molecula2
         if(sold>=0 && s<0)xCundall=0;
         sold=s;
 }
-void InicieAnimacion(void){
+void InicieAnimacion(double Lx){
     std::cout<<"set terminal gif animate"<<std::endl; 
-    std::cout<<"set output 'Arena155.gif'"<<std::endl;
+    std::cout<<"set output 'gif/Arena"<<Lx<<".gif'"<<std::endl;
     std::cout<<"unset key"<<std::endl;
     std::cout<<"set grid"<<std::endl;
     std::cout<<"set xrange[-10:"<<Lx+10<<"]"<<std::endl;
@@ -233,7 +243,7 @@ void InicieAnimacion(void){
     std::cout<<"set trange [0:7]"<<std::endl;
     std::cout<<"set isosamples 12"<<std::endl;
 }
-void InicieCuadro(void){
+void InicieCuadro(double Lx){
     std::cout<<"plot 0,0 ";
     std::cout<<" , "<<Lx/7<<"*t,"<<Ly;     //pared de arriba
     std::cout<<" , 0,"<<Ly/7<<"*t";        //pared de la izquierda

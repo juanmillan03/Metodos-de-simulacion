@@ -57,6 +57,7 @@ public:
 
 };
 int main(int argc, char **argv){
+    
     if (argc!=2){
         std::cout<<"Usage: Meter el valor Lx "<<std::endl;
         return 1;
