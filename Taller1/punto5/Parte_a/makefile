@@ -1,5 +1,4 @@
-inputs := 160 180 190 195 200 205 210
-
+inputs := 160 165 175 180 189 190 191
 all: compile link
 
 compile:

@@ -77,8 +77,12 @@ int main(int argc, char **argv){
     double kT=10;
     double theta,V0=std::sqrt(kT/m0);
     int j,Nlive;
+
     double Ncuadros=5,t,tdibujo,dt=1e-3,
-        tmax=16*Ncuadros*std::sqrt(Ly/g),Tcuadro=tmax/(10*Ncuadros);
+    tmax=0.25*Ncuadros*std::sqrt(Ly/g),
+    Tcuadro=190*tmax/(10*Ncuadros);
+
+
     double Omega0,OmegaMax=8.0;     
     double Rpared=100*Lx,Mpared=100*m0,Rs=Lx/(2*Ns);
 
@@ -97,14 +101,15 @@ int main(int argc, char **argv){
     Nlive=1;
     double tlive;
     double x0=Lx/2,y0=Ly-2*R0;
-    moleculas[0].inicie(x0,y0,0,0,0,0,m0,R0);
-    for (t=tdibujo=0;t<tmax;t+=dt,tdibujo+=dt){
-        if( moleculas[Nlive-1].gety()<=y0-2*R0 && Nlive<=N-1){
+    Omega0= OmegaMax*(2*ran64.r()-1);
+    moleculas[0].inicie(x0,y0,0,0,0,Omega0,m0,R0);
+    for (t=tdibujo=0;t<tmax*210;t+=dt,tdibujo+=dt){
+        if( t>tmax*Nlive && Nlive<=N-1){
             Omega0= OmegaMax*(2*ran64.r()-1);
             moleculas[Nlive].inicie(x0,y0,0,0,0,Omega0,m0,R0);
             ++Nlive;
         }
-        if(tdibujo>Tcuadro){
+        if(tdibujo>tmax*205){
             InicieCuadro(Lx);
             for (int i = 0; i<N+Ns; i++)moleculas[i].Dibujese();    
             TermineCuadro();
@@ -137,7 +142,7 @@ int main(int argc, char **argv){
         if (ymax<moleculas[i].gety()){ymax=moleculas[i].gety();xymax=moleculas[i].getx();}
     }
     tang=(ymax/std::fabs(Lx/2.0-xmin)+ymax/std::fabs(Lx/2.0-xmax))/2;
-    outfile<<Lx<<" "<<tang<<std::endl;
+    outfile<<Lx<<" "<<tang<<" "<<Nlive<<std::endl;
     return 0;
 }
 // -----------------------------FUncion molecule
@@ -224,8 +229,9 @@ void colisionador::CalculeFuerzaEntre(molecule & molecula1, molecule & molecula2
         sold=s;
 }
 void InicieAnimacion(double Lx){
-    std::cout<<"set terminal gif animate"<<std::endl; 
-    std::cout<<"set output 'gif/Arena"<<Lx<<".gif'"<<std::endl;
+    // std::cout<<"set terminal gif animate"<<std::endl; 
+    std::cout<<"set terminal pdf"<<std::endl; 
+    std::cout<<"set output 'gif/Arena"<<Lx<<".pdf'"<<std::endl;
     std::cout<<"unset key"<<std::endl;
     std::cout<<"set grid"<<std::endl;
     std::cout<<"set xrange[-10:"<<Lx+10<<"]"<<std::endl;
