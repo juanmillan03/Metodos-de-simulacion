@@ -92,7 +92,7 @@ void Colisionador::CalculeFuerzaPared(Cuerpo & Molecula1,Cuerpo & Molecula2){
     vector3D n=r21*(1.0/d);
     //Calculo la fuerza
     vector3D F2=n*(KHertz*pow(s,1.5));
-    //Las sumo a los granos
+    //Las sumo a las moléculas
     Molecula2.SumeFuerza((-1)*F2);  Molecula1.SumeFuerza(F2);
   }
 
@@ -100,17 +100,15 @@ void Colisionador::CalculeFuerzaPared(Cuerpo & Molecula1,Cuerpo & Molecula2){
 
 
 void Colisionador::CalculeFuerzaEntre(Cuerpo & Molecula1,Cuerpo & Molecula2){
-  //Determinar si hay colision
   vector3D r21=Molecula2.r-Molecula1.r; double r=r21.norm();
   double s=(Molecula1.R+Molecula2.R)-r;
-  //if(s>0){ //Si hay colisión
-    //Calcular el vector normal
-    vector3D n=r21*(1.0/r);
-    //Calculo la fuerza
-    vector3D F1=n*12*Epsilon*((pow((Sigma/r),12)) - (pow((Sigma/r),6)))/r;
-    //Las sumo a las moléculas
-    Molecula2.SumeFuerza(F1);  Molecula1.SumeFuerza(F1*(-1));
-  //}
+  //Calcular el vector normal
+  vector3D n=r21*(1.0/r);
+  //Calculo la fuerza
+  vector3D F1=n*12*Epsilon*((pow((Sigma/r),12)) - (pow((Sigma/r),6)))/r;
+  //Las sumo a los granos
+  Molecula2.SumeFuerza(F1);  Molecula1.SumeFuerza(F1*(-1));
+  
 }
 
 void Colisionador::CalculeRgiro(Cuerpo * Molecula){
@@ -151,13 +149,13 @@ int main(){
   double Mpared=100*m0;
   //Variables auxiliares para correr la simulacion
   double t,dt=5e-4,tmax=100; 
-  
 
 
   //Inicializar las paredes
   //------------------(  x0,       y0,z0,Vx0,Vy0,Vz0,    m0,    R0)
-  Molecula[N].Inicie(0,0, 0,  0,  0,  0,Mpared,Rpared);   //Pared circular  
-  
+  Molecula[N].Inicie(0,0, 0,  0,  0,  0,Mpared,Rpared);   //Pared circular
+
+
   //INICIO
   for(ix=0;ix<Nx;ix++)
     for(iy=0;iy<Ny;iy++){
@@ -165,17 +163,20 @@ int main(){
       x0=(ix-2)*dx; y0=(iy-2)*dy; Vx0=V0*cos(theta); Vy0=V0*sin(theta);
       //----------------(x0,y0,z0,Vx0,Vy0,Vz0,m0,R0)
       Molecula[iy*Nx+ix].Inicie(x0,y0, 0,Vx0,Vy0,  0,m0,R0);
-      
     }
       
 
   //CORRO
-  
+  std::ofstream outfile;
+  outfile.open("Rgiro_vs_t_solido.txt");
   double sum = 0.0;
   double tot = 0.0;
+  
   for(t=0;t<tmax;t+=dt){
 
     Newton.CalculeRgiro(Molecula);
+
+    outfile<<Newton.GetRgiro()<<" "<<t<<endl;
     
     for(i=0;i<N;i++) Molecula[i].Mueva_r(dt,xi);    
     Newton.CalculeTodasLasFuerzas(Molecula); for(i=0;i<N;i++) Molecula[i].Mueva_V(dt,Um2lambdau2);
@@ -186,12 +187,9 @@ int main(){
     for(i=0;i<N;i++) Molecula[i].Mueva_r(dt,chi);
     Newton.CalculeTodasLasFuerzas(Molecula); for(i=0;i<N;i++)Molecula[i].Mueva_V(dt,Um2lambdau2);
     for(i=0;i<N;i++) Molecula[i].Mueva_r(dt,xi);
-    if (t>= 20.0){
-      sum = sum + Newton.GetRgiro();
-      tot = tot + 1.0;
-    }
   }
-  cout << sum/tot<< endl;
+
+  outfile.close();
   
   return 0;
 }
