@@ -104,7 +104,7 @@ int main() {
 	//angular velocity and time frame
 	double omega = sqrt(G * M / (pow(r, 3)));
 	double T = 2 * M_PI / omega;
-	double Ttotal = 40 * T;
+	double Ttotal = 20 * T;
 	//velocities in new system
 	double r0 = sqrt(x0 * x0 + y0 * y0);
 	double r1 = sqrt(x1 * x1 + y1 * y1);
