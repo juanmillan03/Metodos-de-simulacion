@@ -13,7 +13,7 @@ O.materials.append(FrictMat(young=75e9, poisson=0.16, density=2634, label='arena
 from yade import ymport
 
 # Can also add .stl, .geo and more files
-id_HourGl = O.bodies.append(ymport.gmsh("r_0=1.5.mesh", scale=1000.0, color=(0, 0, 1),material='reloj'))
+id_HourGl = O.bodies.append(ymport.gmsh("r_0=2.5.mesh", scale=1000.0, color=(0, 0, 1),material='reloj'))
 
 
 
@@ -22,7 +22,7 @@ from yade import pack
 sp = pack.SpherePack()
 
 
-sp.makeCloud((-47, -47, 95), (59, 59, 194), num = 400, rMean=5.5, rRelFuzz=0, seed=2)
+sp.makeCloud((-47, -47, 95), (59, 59, 194), num = 400, rMean=4.5, rRelFuzz=0, seed=2)
 
 sp.toSimulation(material='arena')
 
