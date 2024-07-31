@@ -1,102 +1,122 @@
-//CA de Difusion continuo 1D en C++
+//CA de Difusion 1D en C++
 #include  <iostream>
 #include  <cmath>
+#include "Random64.h"
 using namespace std;
 
-const int Lx=128;
-const double p=0.5;
-
-const int Q=2;
+const int Lx=256;
+const int L2=Lx*Lx;
+const double p=0.25;
+const double p0=0.25;
 
 
 class LatticeGas{
 private:
-  int V[Q]; //V[i] i=0 (derecha) i=1 (izquierda)
-  double f[Lx][Q],fnew[Lx][Q]; // son las probabilidades 
+  double f[L2],fnew[L2]; // n[ix][i]
 public:
-  LatticeGas(void);
   void Borrese(void);
+  int Lista(int x,int y);
   void Inicie(int N, double mu,double sigma);
-  double rho(int ix,bool UseNew);
-  void Colisione();
+  std::pair<double, double>  GetSigma2(void);
+  int Frontera(int x, int y);
+  double rho(int ix);
+  void Colisione(void);
   void Adveccione(void);
   void Show(void);
-  double GetSigma(void);
 };
-LatticeGas::LatticeGas(void){
-  //definir los vectores velocidad
-  V[0]=1;  V[1]=-1;
-}
+
 void LatticeGas::Borrese(void){
-  for(int ix=0;ix<Lx;ix++)
-    for(int i=0;i<Q;i++)
-      f[ix][i]=0;
+  for(int ix=0;ix<L2;ix++)
+    {f[ix]=0;fnew[ix]=0;}
+}
+int LatticeGas::Lista(int x,int y){
+     return y*Lx+x;
 }
 void LatticeGas::Inicie(int N,double mu,double sigma){
-  int ix,i;
-  for(int ix=0;ix<Lx;ix++)
-    for(int i=0;i<Q;i++)
-      f[ix][i]=fnew[ix][i]=0.5/(sigma*std::sqrt(2*M_PI))*std::exp(-0.5*std::pow((ix-mu)/sigma,2.0));
+  int ix,i,x,y;
+  for(y = 0; y < Lx; y++) 
+    for(x = 0; x < Lx; x++){ 
+      f[Lista(x,y)]=fnew[Lista(x,y)]=0.5/(2*M_PI*std::pow(sigma,2))*std::exp(-0.5*(std::pow((x-mu)/sigma,2.0)+std::pow((y-mu)/sigma,2.0)));
 
+  }
 }
-double LatticeGas::rho(int ix,bool UseNew){
-  if(UseNew)
-    return fnew[ix][0]+fnew[ix][1];
-  else
-    return f[ix][0]+f[ix][1];
+
+int LatticeGas::Frontera(int x, int y){
+  if (x >= Lx) x -= Lx;
+  else if (x < 0) x += Lx;
+  if (y >= Lx) y -= Lx;
+  else if (y < 0) y += Lx;
+  return Lista(x, y);
 }
 
 void LatticeGas::Colisione(){
-  int ix,i,j;
-  for(ix=0;ix<Lx;ix++) //para cada celda
-      for(i=0;i<Q;i++){
-        j=(i+1)%2;
-        fnew[ix][i]=p*f[ix][i]+(1-p)*f[ix][j]; //Lo dejo igual
-      } 
+  int x, y;
+  for(y = 0; y < Lx; y++) 
+    for(x = 0; x < Lx; x++){
+      fnew[Lista(x,y)]=p0*f[Frontera(x,y+1)]+p*f[Frontera(x+1,y)]+p*f[Frontera(x-1,y)]+(1-2*p-p0)*f[Frontera(x,y-1)];
+  } 
+}
+
+double LatticeGas::rho(int ix){
+  return f[ix];
 }
 void LatticeGas::Adveccione(void){
-  for(int ix=0;ix<Lx;ix++) //para cada celda
-    for(int i=0;i<Q;i++) // y en cada dirección
-      f[(ix+Lx+V[i])%Lx][i]=fnew[ix][i];
+  for(int ix=0;ix<L2;ix++){
+    f[ix]=fnew[ix];
+  }
 }
 void LatticeGas::Show(void){
-    for(int ix=0;ix<Lx;ix++)
-      std::cout<<ix<<" "<<rho(ix,true)<<std::endl;
-  
+  for(int ix=0;ix<L2;ix++){
+    if(ix%Lx==0 && ix!=0 )cout<<std::endl;
+    std::cout<<f[ix]<<" ";
+    
+  }
+  cout<<endl;
 }
+//------------------- FUNCIONES GLOBALES -------
 
-double LatticeGas::GetSigma(void){
-  int ix;
+std::pair<double, double>  LatticeGas::GetSigma2(void){
   double N=0;
-  for(ix=0;ix<Lx;ix++)
-    N+=rho(ix,true);
+  for(int celda=0;celda<L2;celda++) N +=rho(celda);
   //Calcular la posición promedio  
-  double xprom=0;
-  for(ix=0;ix<Lx;ix++)
-    xprom+=ix*rho(ix,true);
+  double xprom=0,yprom=0;
+  for(int y=0;y<Lx;y++){
+    for(int x=0;x<Lx;x++){
+      xprom+=x*rho(Lista(x,y));
+      yprom+=y*rho(Lista(x,y));
+    }
+  }
   xprom/=N;
-  //Calcular la varianza promedio
-  double Sigma2=0;
-  for(ix=0;ix<Lx;ix++)
-    Sigma2+=pow(ix-xprom,2.0)*rho(ix,true);
-  Sigma2/=N;
-  return Sigma2;
+  yprom/=N;
+  double Sigma2x=0,Sigma2y=0;
+  for(int y=0;y<Lx;y++){
+    for(int x=0;x<Lx;x++){
+      Sigma2x+=pow(x-xprom,2.0)*rho(Lista(x,y));
+      Sigma2y+=pow(y-yprom,2.0)*rho(Lista(x,y));
+    }
+  }
+  Sigma2x/=N;
+  Sigma2y/=N;
+  return std::make_pair(Sigma2x, Sigma2y);
 }
-
-int main(void){
+int main(int argc, char **argv){
+  double tmax = std::atof(argv[1]);
   LatticeGas Difusion;
-  int N=1; double mu=Lx/2, sigma=Lx/64;
-  int t,tmax=400;
-
+  double mu=Lx/2, sigma=16;
+  int t;
+  int N=2400;
+  
   Difusion.Borrese();
   Difusion.Inicie(N,mu,sigma);
   for(t=0;t<tmax;t++){
-    std::cout<<t<<" "<<Difusion.GetSigma()<<std::endl;
+    std::clog<<t<<" "<<Difusion.GetSigma2().first<<" "<<Difusion.GetSigma2().second<<std::endl;
     Difusion.Colisione();
     Difusion.Adveccione();
   }
-  //Difusion.Show();
+  
+  Difusion.Show();
   
   
   return 0;
 }
+
