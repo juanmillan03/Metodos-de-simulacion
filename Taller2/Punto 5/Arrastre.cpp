@@ -42,7 +42,7 @@ public:
     double sigmaxx(int ix,int iy);
     double sigmayy(int ix,int iy);
     double sigmaxy(int ix,int iy);
-    std::vector<double> Calcule_dF(int Px, int Py, double Ax, double Ay);
+    std::vector<double> Calcule_dF(int Px, int Py);
     std::vector<double> CalculeFuerza(int N, double rho, double Ufan);
     void Print(const char * NameFile, double Ufan);
 };
@@ -220,9 +220,13 @@ double LatticeBoltzman::sigmaxy(int ix,int iy){
     return nu*(dUxy(ix,iy)+dUyx(ix,iy));
 }
 
-std::vector<double> LatticeBoltzman::Calcule_dF(int Px, int Py, double Ax, double Ay){
+std::vector<double> LatticeBoltzman::Calcule_dF(int Px, int Py){
 
     int i, ix, iy;
+    ix= int(Px);
+    iy=int(Py);
+    if(ix>=Lx)ix=Lx-1;
+    if(iy>=Ly)ix=Ly-1;
     double dFx, dFy, u=Px-ix, v=Py-iy;
     std::vector<double> dF(2, 0.0);
     double sxx[4], syy[4], sxy[4];
@@ -239,7 +243,7 @@ std::vector<double> LatticeBoltzman::Calcule_dF(int Px, int Py, double Ax, doubl
     double syy_interp = syy[0]*(1-u)*(1-v) + syy[1]*u*(1-v) + syy[2]*(1-u)*v + syy[3]*u*v;
     double sxy_interp = sxy[0]*(1-u)*(1-v) + sxy[1]*u*(1-v) + sxy[2]*(1-u)*v + sxy[3]*u*v;
 
-    dFx = sxx_interp*Ax + sxy_interp*Ay; dFy = sxy_interp*Ax + syy_interp*Ay; 
+    dFx = sxx_interp*ix + sxy_interp*iy; dFy = sxy_interp*ix + syy_interp*iy; 
 
     return dF={dFx, dFy};
 }
