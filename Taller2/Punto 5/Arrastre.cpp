@@ -12,10 +12,7 @@ const int N=1000;
 
 const int Q=9;
 
-const double tau=0.8;
-const double Utau=1.0/tau;
-const double UmUtau= 1-Utau;
-const double nu=(1/3)*(tau-1/2);
+
 
 
 
@@ -26,8 +23,12 @@ private:
     double w[Q];      //pesos
     int Vx[Q], Vy[Q]; //Vectores velocidad
     double *f, *fnew; //Funciones de distribucion
+    double tau;
+    double Utau=1.0/tau;
+    double UmUtau= 1-Utau;
+    double nu=(1/3)*(tau-1/2);
 public:
-    LatticeBoltzman(void);
+    LatticeBoltzman(double TAU);
     ~LatticeBoltzman(void);
     int n(int ix, int iy, int i){return (ix*Ly+iy)*Q+i;};
     double rho(int ix, int iy, bool UseNew);
@@ -50,8 +51,12 @@ public:
     void Print(const char * NameFile, double Ufan);
 };
 
-LatticeBoltzman::LatticeBoltzman(void){
+LatticeBoltzman::LatticeBoltzman(double TAU){
     //Cargar los pesos
+    tau=TAU;
+    Utau=1.0/tau;
+    UmUtau= 1-Utau;
+    nu=(1/3)*(tau-1/2);
     w[0]=4.0/9; w[1]=w[2]=w[3]=w[4]=1.0/9; w[5]=w[6]=w[7]=w[8]=1.0/36;
     //Cargar los vectores velocidad
     Vx[0]=0; Vx[1]=1; Vx[2]=0; Vx[3]=-1; Vx[4]=0;
@@ -275,7 +280,7 @@ std::vector<double> LatticeBoltzman::CalculeFuerza() {
             }
         }
     
-    cout<<tau<<' '<<2*F[0]/(1.0*2*R*0.01)<<endl;
+    cout<<3*0.1*8/(tau-0.5)<<'\t'<<2*F[0]/(1.0*2*R*0.01)<<endl;
     return F;
 }
 
@@ -293,8 +298,9 @@ void LatticeBoltzman::Print(const char * NameFile, double Ufan){
     MyFile.close();    
 }
 
-int main(void){
-    LatticeBoltzman Aire;
+int main(int argc, char **argv){
+    double tau = std::atof(argv[1]);
+    LatticeBoltzman Aire(tau);
     int t, tmax=1000;
     double rho0=1.0, Ufan0=0.1; 
     double R=8;
