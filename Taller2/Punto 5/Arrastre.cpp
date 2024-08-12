@@ -6,10 +6,13 @@ using namespace std;
 
 const int Lx=512;
 const int Ly=64;
+const int ixc=128;
+const int iyc=32;
+const int N=1000;
 
 const int Q=9;
 
-const double tau=1.5;
+const double tau=0.8;
 const double Utau=1.0/tau;
 const double UmUtau= 1-Utau;
 const double nu=(1/3)*(tau-1/2);
@@ -42,8 +45,8 @@ public:
     double sigmaxx(int ix,int iy);
     double sigmayy(int ix,int iy);
     double sigmaxy(int ix,int iy);
-    std::vector<double> Calcule_dF(int Px, int Py);
-    std::vector<double> CalculeFuerza(int N, double rho, double Ufan);
+    std::vector<double> Calcule_dF(int Px, int Py, double dAx, double dAy);
+    std::vector<double> CalculeFuerza();
     void Print(const char * NameFile, double Ufan);
 };
 
@@ -121,7 +124,7 @@ void LatticeBoltzman::Colision(void){
 
 void LatticeBoltzman::ImponerCampos(double Ufan){
     int i, ix, iy, n0;
-    double rho0; int ixc=128, iyc=32, R=8; double R2=R*R;
+    double rho0; int R=8; double R2=R*R;
     //Ir por todas las celdas y mirar si es ventilador o obstaculo
     for(ix=0;ix<Lx;ix++)      //Para cada celda
         for(iy=0;iy<Ly;iy++){
@@ -151,7 +154,7 @@ void LatticeBoltzman::Adveccion(void){
 
 double LatticeBoltzman::dUx(int ix, int iy){
     int i, ixnext, iynext; double rho0, Ux0next, sum;
-
+    rho0=rho(ix,iy,false);
     for(i=0;i<Q;i++){
         ixnext=(ix+Vx[i]+Lx)%Lx; iynext=(iy+Vy[i]+Ly)%Ly;
         Ux0next=Jx(ixnext,iynext,true)/rho0; 
@@ -162,7 +165,7 @@ double LatticeBoltzman::dUx(int ix, int iy){
 
 double LatticeBoltzman::dUy(int ix, int iy){
     int i, ixnext, iynext; double rho0, Uy0next, sum;
-
+    rho0=rho(ix,iy,false);
     for(i=0;i<Q;i++){
         ixnext=(ix+Vx[i]+Lx)%Lx; iynext=(iy+Vy[i]+Ly)%Ly;
         Uy0next=Jy(ixnext,iynext,true)/rho0; 
@@ -173,7 +176,7 @@ double LatticeBoltzman::dUy(int ix, int iy){
 
 double LatticeBoltzman::dUxy(int ix, int iy){
     int i, ixnext, iynext; double rho0, Ux0next, sum;
-
+    rho0=rho(ix,iy,false);
     for(i=0;i<Q;i++){
         ixnext=(ix+Vx[i]+Lx)%Lx; iynext=(iy+Vy[i]+Ly)%Ly;
         Ux0next=Jx(ixnext,iynext,true)/rho0; 
@@ -184,7 +187,7 @@ double LatticeBoltzman::dUxy(int ix, int iy){
 
 double LatticeBoltzman::dUyx(int ix, int iy){
     int i, ixnext, iynext; double rho0, Uy0next, sum;
-
+    rho0=rho(ix,iy,false);
     for(i=0;i<Q;i++){
         ixnext=(ix+Vx[i]+Lx)%Lx; iynext=(iy+Vy[i]+Ly)%Ly;
         Uy0next=Jy(ixnext,iynext,true)/rho0; 
@@ -220,20 +223,18 @@ double LatticeBoltzman::sigmaxy(int ix,int iy){
     return nu*(dUxy(ix,iy)+dUyx(ix,iy));
 }
 
-std::vector<double> LatticeBoltzman::Calcule_dF(int Px, int Py){
+std::vector<double> LatticeBoltzman::Calcule_dF(int Px, int Py, double dAx, double dAy){
 
-    int i, ix, iy;
+    int i, ix, iy, ixn, iyn;
     ix= int(Px);
     iy=int(Py);
-    if(ix>=Lx)ix=Lx-1;
-    if(iy>=Ly)ix=Ly-1;
     double dFx, dFy, u=Px-ix, v=Py-iy;
     std::vector<double> dF(2, 0.0);
     double sxx[4], syy[4], sxy[4];
 
     for (i=0; i<4; i++){
-        int ixn = ix+(i % 2);
-        int iyn = iy+(i / 2);
+        ixn = ix+(i % 2);
+        iyn = iy+(i / 2);
         sxx[i] = sigmaxx(ixn, iyn);
         syy[i] = sigmayy(ixn, iyn);
         sxy[i] = sigmaxy(ixn, iyn);
@@ -243,56 +244,59 @@ std::vector<double> LatticeBoltzman::Calcule_dF(int Px, int Py){
     double syy_interp = syy[0]*(1-u)*(1-v) + syy[1]*u*(1-v) + syy[2]*(1-u)*v + syy[3]*u*v;
     double sxy_interp = sxy[0]*(1-u)*(1-v) + sxy[1]*u*(1-v) + sxy[2]*(1-u)*v + sxy[3]*u*v;
 
-    dFx = sxx_interp*ix + sxy_interp*iy; dFy = sxy_interp*ix + syy_interp*iy; 
+    dFx = sxx_interp*dAx + sxy_interp*dAy; dFy = sxy_interp*dAx + syy_interp*dAy; 
 
     return dF={dFx, dFy};
 }
 
-/*std::vector<double> LatticeBoltzman::CalculeFuerza(int N, double rho, double Ufan) {
-  const double R = 8; // radio del cilindro
-  const double L = 2 * M_PI * R; // circunferencia del cilindro
-  const double dtheta = L / N; // incremento angular
-  double dFx, dFy;
+std::vector<double> LatticeBoltzman::CalculeFuerza() {
+    std::vector<double> F(2, 0.0); // Fx, Fy
+    int ix, iy;
+    double dA, dAx, dAy;
+    double R = 8, R2=R*R; // radio del cilindro
+    double theta = 2 * M_PI / N; // ángulo entre cada elemento
+    std::vector<double> dF;
 
-  std::vector<double> fuerza(2, 0.0); // inicializar vector de fuerza a cero
+   for(ix=0;ix<Lx;ix++)
+        for(iy=0;iy<Ly;iy++){
+            if((ix-ixc)*(ix-ixc)+(iy-iyc)*(iy-iyc)==R2){
+                for (int i = 0; i < N; i++) {
+                    double x = R * cos(i * theta+theta/2)+ixc;
+                    double y = R * sin(i * theta+theta/2)+iyc;
+                    dA = R * theta; 
+                    dAx = dA*cos(i * theta+theta/2); 
+                    dAy = dA*sin(i * theta+theta/2); 
 
-  for (int i = 0; i < N; i++) {
+                    dF = Calcule_dF(x, y, dAx, dAy);
+                    F[0] += dF[0]; // sumar la componente x de la fuerza
+                    F[1] += dF[1]; // sumar la componente y de la fuerza
+
+                }
+            }
+        }
     
-    double theta = i * dtheta;
-    double x = R * cos(theta);
-    double y = R * sin(theta);
-    int ix = (int)round(x);
-    int iy = (int)round(y);
+    cout<<tau<<' '<<2*F[0]/(1.0*2*R*0.01)<<endl;
+    return F;
+}
 
-    
-    std::vector<double> d_F = Calcule_dF(ix, iy, x, y);
-    dFx = d_F[0];
-    dFy = d_F[1];
 
-    fuerza[0] += dFx;
-    fuerza[1] += dFy;
-  }
-
-  return fuerza;
-}*/
 
 void LatticeBoltzman::Print(const char * NameFile, double Ufan){
     ofstream MyFile(NameFile); double rho0, Ux0, Uy0; int ix, iy;
-    for(ix=0;ix<Lx;ix+=4){
-        for(iy=0;iy<Ly;iy+=4){
-            rho0=rho(ix,iy,true); Ux0=Jx(ix,iy,true)/rho0; Uy0=Jy(ix,iy,true)/rho0;
-            MyFile<<ix<<" "<<iy<<" "<<Ux0/Ufan*4<<" "<<Uy0/Ufan*4<<endl;
+    std::vector<double> F(2, 0.0);
+    
+    for(ix=0;ix<Lx;ix++)
+        for(iy=0;iy<Ly;iy++){
+            MyFile<<ix<<' '<<iy<<' '<<sigmaxx(ix,iy)<<endl;  
         }
-        MyFile<<endl;
-    }
-    MyFile.close();
+
+    MyFile.close();    
 }
 
 int main(void){
     LatticeBoltzman Aire;
     int t, tmax=1000;
     double rho0=1.0, Ufan0=0.1; 
-    int N = 24;
     double R=8;
 
     //INICIE
@@ -303,9 +307,12 @@ int main(void){
         Aire.Colision();
         Aire.ImponerCampos(Ufan0);
         Aire.Adveccion();
+        
 
     }
+    Aire.CalculeFuerza();
+    
     //Print
-    Aire.Print("Arrastre.dat", Ufan0);
+    //Aire.Print("Arrastre.dat", Ufan0);
     return 0;
 }
