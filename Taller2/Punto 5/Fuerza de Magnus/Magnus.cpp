@@ -8,7 +8,7 @@ const int Lx=512;
 const int Ly=64;
 const int ixc=128;
 const int iyc=32;
-const int N=1000;
+const int N=100;
 
 const int Q=9;
 
@@ -37,7 +37,7 @@ public:
     double feq(double rho0, double Ux0, double Uy0, int i);
     void Inicie(double rho0, double Ux0, double Uy0);
     void Colision(void);
-    void ImponerCampos(double Ufan);
+    void ImponerCampos(double Ufan, double Omega);
     void Adveccion(void);
     double dUx(int ix, int iy);
     double dUy(int ix, int iy);
@@ -127,9 +127,10 @@ void LatticeBoltzman::Colision(void){
         }
 }
 
-void LatticeBoltzman::ImponerCampos(double Ufan){
+void LatticeBoltzman::ImponerCampos(double Ufan, double Omega){
     int i, ix, iy, n0;
     double rho0; int R=8; double R2=R*R;
+    double Ux0, Uy0;
     //Ir por todas las celdas y mirar si es ventilador o obstaculo
     for(ix=0;ix<Lx;ix++)      //Para cada celda
         for(iy=0;iy<Ly;iy++){
@@ -138,11 +139,15 @@ void LatticeBoltzman::ImponerCampos(double Ufan){
             if(ix==0)
                 for(i=0;i<Q;i++){n0=n(ix,iy,i); fnew[n0]=feq(rho0,Ufan,0,i);}
             //Obstaculo
-            else if((ix-ixc)*(ix-ixc)+(iy-iyc)*(iy-iyc)<=R2)
-                for(i=0;i<Q;i++){n0=n(ix,iy,i); fnew[n0]=feq(rho0,0,0,i);}
+            else if((ix-ixc)*(ix-ixc)+(iy-iyc)*(iy-iyc)<=R2){
+                Ux0=-Omega*(iy-iyc); Uy0=Omega*(ix-ixc);
+                for(i=0;i<Q;i++){n0=n(ix,iy,i); fnew[n0]=feq(rho0,Ux0,Uy0,i);}
+            }
             // Un punto extra
-            else if(ix==ixc && iy==iyc+R+1)
-                for(i=0;i<Q;i++){n0=n(ix,iy,i); fnew[n0]=feq(rho0,0,0,i);}
+            else if(ix==ixc && iy==iyc+R+1){
+                Ux0=-Omega*(iy-iyc); Uy0=Omega*(ix-ixc);
+                for(i=0;i<Q;i++){n0=n(ix,iy,i); fnew[n0]=feq(rho0,Ux0,Uy0,i);}
+            }
         }
 }
 
@@ -303,7 +308,7 @@ int main(int argc, char **argv){
     double tau = std::atof(argv[1]);
     LatticeBoltzman Aire(tau);
     int t, tmax=1000;
-    double rho0=1.0, Ufan0=0.1; 
+    double rho0=1.0, Ufan0=0.1, Omega0=0.01;
     double R=8;
     std::vector<double> Fuerza;
 
@@ -313,7 +318,7 @@ int main(int argc, char **argv){
     //CORRA
     for(t=0;t<tmax;t++){
         Aire.Colision();
-        Aire.ImponerCampos(Ufan0);
+        Aire.ImponerCampos(Ufan0,Omega0);
         Aire.Adveccion();
         
 
