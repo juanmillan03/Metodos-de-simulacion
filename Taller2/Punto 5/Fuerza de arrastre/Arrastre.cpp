@@ -280,7 +280,8 @@ std::vector<double> LatticeBoltzman::CalculeFuerza() {
             }
         }
     
-    cout<<3*0.1*8/(tau-0.5)<<'\t'<<2*F[0]/(1.0*2*R*0.01)<<endl;
+    cout<<3*0.1*R/(tau-0.5)<<' '<<2*F[0]/(1.0*2*R*0.1*0.1)<<endl; //--------------> Archivo CoefArrastre.dat
+    //cout<<tau<<' '<<F[0]<<' '<<F[1]<<endl; //--------------> Archivo Fuerzas.dat
     return F;
 }
 
@@ -292,7 +293,7 @@ void LatticeBoltzman::Print(const char * NameFile, double Ufan){
     
     for(ix=0;ix<Lx;ix++)
         for(iy=0;iy<Ly;iy++){
-            MyFile<<ix<<' '<<iy<<' '<<sigmaxx(ix,iy)<<endl;  
+            MyFile<<ix<<' '<<iy<<endl;  
         }
 
     MyFile.close();    
@@ -304,6 +305,7 @@ int main(int argc, char **argv){
     int t, tmax=1000;
     double rho0=1.0, Ufan0=0.1; 
     double R=8;
+    std::vector<double> Fuerza;
 
     //INICIE
     Aire.Inicie(rho0,Ufan0,0);
