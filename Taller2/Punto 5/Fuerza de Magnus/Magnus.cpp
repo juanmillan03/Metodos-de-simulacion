@@ -286,7 +286,7 @@ std::vector<double> LatticeBoltzman::CalculeFuerza(double Omega) {
         }
     
     //cout<<Omega<<' '<<sqrt(F[0]*F[0]+F[1]*F[1])<<endl;
-    cout<<Omega<<' '<<F[0]<<' '<<F[1]<<endl; //--------------> Archivo Fuerzas.dat
+    cout<<Omega<<' '<<abs(F[1])<<endl; //--------------> Archivo Fuerzas.dat
     return F;
 }
 
