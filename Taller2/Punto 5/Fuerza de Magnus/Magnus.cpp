@@ -47,7 +47,7 @@ public:
     double sigmayy(int ix,int iy);
     double sigmaxy(int ix,int iy);
     std::vector<double> Calcule_dF(int Px, int Py, double dAx, double dAy);
-    std::vector<double> CalculeFuerza();
+    std::vector<double> CalculeFuerza(double Omega);
     void Print(const char * NameFile, double Ufan);
 };
 
@@ -259,7 +259,7 @@ std::vector<double> LatticeBoltzman::Calcule_dF(int Px, int Py, double dAx, doub
     return dF={dFx, dFy};
 }
 
-std::vector<double> LatticeBoltzman::CalculeFuerza() {
+std::vector<double> LatticeBoltzman::CalculeFuerza(double Omega) {
     std::vector<double> F(2, 0.0); // Fx, Fy
     int ix, iy;
     double dA, dAx, dAy;
@@ -285,8 +285,8 @@ std::vector<double> LatticeBoltzman::CalculeFuerza() {
             }
         }
     
-    cout<<3*0.1*R/(tau-0.5)<<' '<<2*F[0]/(1.0*2*R*0.1*0.1)<<endl; //--------------> Archivo CoefArrastre.dat
-    //cout<<tau<<' '<<F[0]<<' '<<F[1]<<endl; //--------------> Archivo Fuerzas.dat
+    //cout<<Omega<<' '<<sqrt(F[0]*F[0]+F[1]*F[1])<<endl;
+    cout<<Omega<<' '<<F[0]<<' '<<F[1]<<endl; //--------------> Archivo Fuerzas.dat
     return F;
 }
 
@@ -294,21 +294,22 @@ std::vector<double> LatticeBoltzman::CalculeFuerza() {
 
 void LatticeBoltzman::Print(const char * NameFile, double Ufan){
     ofstream MyFile(NameFile); double rho0, Ux0, Uy0; int ix, iy;
-    std::vector<double> F(2, 0.0);
-    
-    for(ix=0;ix<Lx;ix++)
-        for(iy=0;iy<Ly;iy++){
-            MyFile<<ix<<' '<<iy<<endl;  
+    for(ix=0;ix<Lx;ix+=4){
+        for(iy=0;iy<Ly;iy+=4){
+            rho0=rho(ix,iy,true); Ux0=Jx(ix,iy,true)/rho0; Uy0=Jy(ix,iy,true)/rho0;
+            MyFile<<ix<<" "<<iy<<" "<<Ux0/Ufan*4<<" "<<Uy0/Ufan*4<<endl;
         }
-
-    MyFile.close();    
+        MyFile<<endl;
+    }
+    MyFile.close();
 }
 
 int main(int argc, char **argv){
-    double tau = std::atof(argv[1]);
+    double tau = 1.5;
+    double Omega0 = std::atof(argv[1]);
     LatticeBoltzman Aire(tau);
     int t, tmax=1000;
-    double rho0=1.0, Ufan0=0.1, Omega0=0.01;
+    double rho0=1.0, Ufan0=0.1;
     double R=8;
     std::vector<double> Fuerza;
 
@@ -323,9 +324,9 @@ int main(int argc, char **argv){
         
 
     }
-    Aire.CalculeFuerza();
+    Aire.CalculeFuerza(Omega0);
     
     //Print
-    //Aire.Print("Arrastre.dat", Ufan0);
+    Aire.Print("Magnus.dat", Ufan0);
     return 0;
 }
