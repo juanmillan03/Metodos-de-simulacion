@@ -8,7 +8,7 @@ const int Lx=512;
 const int Ly=64;
 const int ixc=128;
 const int iyc=32;
-const int N=1000;
+const double N=24;
 
 const int Q=9;
 
@@ -26,7 +26,7 @@ private:
     double tau;
     double Utau=1.0/tau;
     double UmUtau= 1-Utau;
-    double nu=(1/3)*(tau-1/2);
+    double nu=(1.0/3.0)*(tau-0.5);
 public:
     LatticeBoltzman(double TAU);
     ~LatticeBoltzman(void);
@@ -56,7 +56,7 @@ LatticeBoltzman::LatticeBoltzman(double TAU){
     tau=TAU;
     Utau=1.0/tau;
     UmUtau= 1-Utau;
-    nu=(1/3)*(tau-1/2);
+    nu=(1.0/3.0)*(tau-0.5);
     w[0]=4.0/9; w[1]=w[2]=w[3]=w[4]=1.0/9; w[5]=w[6]=w[7]=w[8]=1.0/36;
     //Cargar los vectores velocidad
     Vx[0]=0; Vx[1]=1; Vx[2]=0; Vx[3]=-1; Vx[4]=0;
@@ -162,7 +162,7 @@ double LatticeBoltzman::dUx(int ix, int iy){
     rho0=rho(ix,iy,false);
     for(i=0;i<Q;i++){
         ixnext=(ix+Vx[i]+Lx)%Lx; iynext=(iy+Vy[i]+Ly)%Ly;
-        Ux0next=Jx(ixnext,iynext,true)/rho0; 
+        Ux0next=Jx(ixnext,iynext,false)/rho0; 
         sum+=w[i]*Vx[i]*Ux0next;
     }
     return 3*sum;
@@ -173,7 +173,7 @@ double LatticeBoltzman::dUy(int ix, int iy){
     rho0=rho(ix,iy,false);
     for(i=0;i<Q;i++){
         ixnext=(ix+Vx[i]+Lx)%Lx; iynext=(iy+Vy[i]+Ly)%Ly;
-        Uy0next=Jy(ixnext,iynext,true)/rho0; 
+        Uy0next=Jy(ixnext,iynext,false)/rho0; 
         sum+=w[i]*Vy[i]*Uy0next;
     }
     return 3*sum;
@@ -184,7 +184,7 @@ double LatticeBoltzman::dUxy(int ix, int iy){
     rho0=rho(ix,iy,false);
     for(i=0;i<Q;i++){
         ixnext=(ix+Vx[i]+Lx)%Lx; iynext=(iy+Vy[i]+Ly)%Ly;
-        Ux0next=Jx(ixnext,iynext,true)/rho0; 
+        Ux0next=Jx(ixnext,iynext,false)/rho0; 
         sum+=w[i]*Vy[i]*Ux0next;
     }
     return 3*sum;
@@ -195,7 +195,7 @@ double LatticeBoltzman::dUyx(int ix, int iy){
     rho0=rho(ix,iy,false);
     for(i=0;i<Q;i++){
         ixnext=(ix+Vx[i]+Lx)%Lx; iynext=(iy+Vy[i]+Ly)%Ly;
-        Uy0next=Jy(ixnext,iynext,true)/rho0; 
+        Uy0next=Jy(ixnext,iynext,false)/rho0; 
         sum+=w[i]*Vx[i]*Uy0next;
     }
     return 3*sum;
@@ -204,36 +204,37 @@ double LatticeBoltzman::dUyx(int ix, int iy){
 double LatticeBoltzman::sigmaxx(int ix,int iy){
     double rho0, p; 
     
-    rho0=rho(ix,iy,true); 
-    p=rho0/3;
+    rho0=rho(ix,iy,false); 
+    p=rho0/3.0;
 
-    return 2*nu*dUx(ix,iy)-p;
+    return 2*(nu*rho0)*dUx(ix,iy)-p;
 }
 
 double LatticeBoltzman::sigmayy(int ix,int iy){
     double rho0, p; 
     
-    rho0=rho(ix,iy,true); 
-    p=rho0/3;
+    rho0=rho(ix,iy,false); 
+    p=rho0/3.0;
 
-    return 2*nu*dUy(ix,iy)-p;
+    return 2*(nu*rho0)*dUy(ix,iy)-p;
 }
 
 double LatticeBoltzman::sigmaxy(int ix,int iy){
     double rho0, p; 
     
-    rho0=rho(ix,iy,true); 
-    p=rho0/3;
+    rho0=rho(ix,iy,false); 
+    p=rho0/3.0;
 
-    return nu*(dUxy(ix,iy)+dUyx(ix,iy));
+    return (nu*rho0)*(dUxy(ix,iy)+dUyx(ix,iy));
 }
 
 std::vector<double> LatticeBoltzman::Calcule_dF(int Px, int Py, double dAx, double dAy){
 
     int i, ix, iy, ixn, iyn;
     ix= int(Px);
-    iy=int(Py);
+    iy= int(Py);
     double dFx, dFy, u=Px-ix, v=Py-iy;
+    double sxx_interp, syy_interp, sxy_interp;
     std::vector<double> dF(2, 0.0);
     double sxx[4], syy[4], sxy[4];
 
@@ -245,9 +246,9 @@ std::vector<double> LatticeBoltzman::Calcule_dF(int Px, int Py, double dAx, doub
         sxy[i] = sigmaxy(ixn, iyn);
     }
 
-    double sxx_interp = sxx[0]*(1-u)*(1-v) + sxx[1]*u*(1-v) + sxx[2]*(1-u)*v + sxx[3]*u*v;
-    double syy_interp = syy[0]*(1-u)*(1-v) + syy[1]*u*(1-v) + syy[2]*(1-u)*v + syy[3]*u*v;
-    double sxy_interp = sxy[0]*(1-u)*(1-v) + sxy[1]*u*(1-v) + sxy[2]*(1-u)*v + sxy[3]*u*v;
+    sxx_interp = sxx[0]*(1-u)*(1-v) + sxx[1]*u*(1-v) + sxx[2]*(1-u)*v + sxx[3]*u*v;
+    syy_interp = syy[0]*(1-u)*(1-v) + syy[1]*u*(1-v) + syy[2]*(1-u)*v + syy[3]*u*v;
+    sxy_interp = sxy[0]*(1-u)*(1-v) + sxy[1]*u*(1-v) + sxy[2]*(1-u)*v + sxy[3]*u*v;
 
     dFx = sxx_interp*dAx + sxy_interp*dAy; dFy = sxy_interp*dAx + syy_interp*dAy; 
 
@@ -257,7 +258,7 @@ std::vector<double> LatticeBoltzman::Calcule_dF(int Px, int Py, double dAx, doub
 std::vector<double> LatticeBoltzman::CalculeFuerza() {
     std::vector<double> F(2, 0.0); // Fx, Fy
     int ix, iy;
-    double dA, dAx, dAy;
+    double dA, dAx, dAy, x, y;
     double R = 8, R2=R*R; // radio del cilindro
     double theta = 2 * M_PI / N; // ángulo entre cada elemento
     std::vector<double> dF;
@@ -266,8 +267,8 @@ std::vector<double> LatticeBoltzman::CalculeFuerza() {
         for(iy=0;iy<Ly;iy++){
             if((ix-ixc)*(ix-ixc)+(iy-iyc)*(iy-iyc)==R2){
                 for (int i = 0; i < N; i++) {
-                    double x = R * cos(i * theta+theta/2)+ixc;
-                    double y = R * sin(i * theta+theta/2)+iyc;
+                    x = R * cos(i * theta+theta/2)+ixc;
+                    y = R * sin(i * theta+theta/2)+iyc;
                     dA = R * theta; 
                     dAx = dA*cos(i * theta+theta/2); 
                     dAy = dA*sin(i * theta+theta/2); 
@@ -280,8 +281,7 @@ std::vector<double> LatticeBoltzman::CalculeFuerza() {
             }
         }
     
-    cout<<3*0.1*R/(tau-0.5)<<' '<<2*F[0]/(1.0*2*R*0.1*0.1)<<endl; //--------------> Archivo CoefArrastre.dat
-    //cout<<tau<<' '<<F[0]<<' '<<F[1]<<endl; //--------------> Archivo Fuerzas.dat
+    //cout<<nu<<' '<<2*F[0]/(1.0*2*R*0.1*0.1)<<endl; //--------------> Archivo CoefArrastre.dat
     return F;
 }
 
@@ -289,14 +289,14 @@ std::vector<double> LatticeBoltzman::CalculeFuerza() {
 
 void LatticeBoltzman::Print(const char * NameFile, double Ufan){
     ofstream MyFile(NameFile); double rho0, Ux0, Uy0; int ix, iy;
-    std::vector<double> F(2, 0.0);
-    
-    for(ix=0;ix<Lx;ix++)
-        for(iy=0;iy<Ly;iy++){
-            MyFile<<ix<<' '<<iy<<endl;  
+    for(ix=0;ix<Lx;ix+=4){
+        for(iy=0;iy<Ly;iy+=4){
+            rho0=rho(ix,iy,true); Ux0=Jx(ix,iy,true)/rho0; Uy0=Jy(ix,iy,true)/rho0;
+            MyFile<<ix<<" "<<iy<<" "<<Ux0/Ufan*4<<" "<<Uy0/Ufan*4<<endl;
         }
-
-    MyFile.close();    
+        MyFile<<endl;
+    }
+    MyFile.close();
 }
 
 int main(int argc, char **argv){
@@ -305,7 +305,7 @@ int main(int argc, char **argv){
     int t, tmax=1000;
     double rho0=1.0, Ufan0=0.1; 
     double R=8;
-    std::vector<double> Fuerza;
+    std::vector<double> Fuerza(2, 0.0);
 
     //INICIE
     Aire.Inicie(rho0,Ufan0,0);
@@ -318,9 +318,10 @@ int main(int argc, char **argv){
         
 
     }
-    Aire.CalculeFuerza();
+    Fuerza=Aire.CalculeFuerza();
+    cout<<tau<<' '<<Fuerza[0]<<' '<<Fuerza[1]<<endl;//--------------> Archivo Fuerzas.dat
     
     //Print
-    //Aire.Print("Arrastre.dat", Ufan0);
+    Aire.Print("Arrastre.dat", Ufan0);
     return 0;
 }
