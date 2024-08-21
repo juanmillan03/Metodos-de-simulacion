@@ -8,7 +8,7 @@ const int Lx=512;
 const int Ly=64;
 const int ixc=128;
 const int iyc=32;
-const double N=24;
+const double N=1000;
 
 const int Q=9;
 
@@ -159,9 +159,10 @@ void LatticeBoltzman::Adveccion(void){
 
 double LatticeBoltzman::dUx(int ix, int iy){
     int i, ixnext, iynext; double rho0, Ux0next, sum;
-    rho0=rho(ix,iy,false);
+    
     for(i=0;i<Q;i++){
         ixnext=(ix+Vx[i]+Lx)%Lx; iynext=(iy+Vy[i]+Ly)%Ly;
+        rho0=rho(ixnext,iynext,false);
         Ux0next=Jx(ixnext,iynext,false)/rho0; 
         sum+=w[i]*Vx[i]*Ux0next;
     }
@@ -170,9 +171,10 @@ double LatticeBoltzman::dUx(int ix, int iy){
 
 double LatticeBoltzman::dUy(int ix, int iy){
     int i, ixnext, iynext; double rho0, Uy0next, sum;
-    rho0=rho(ix,iy,false);
+    
     for(i=0;i<Q;i++){
         ixnext=(ix+Vx[i]+Lx)%Lx; iynext=(iy+Vy[i]+Ly)%Ly;
+        rho0=rho(ixnext,iynext,false);
         Uy0next=Jy(ixnext,iynext,false)/rho0; 
         sum+=w[i]*Vy[i]*Uy0next;
     }
@@ -181,9 +183,10 @@ double LatticeBoltzman::dUy(int ix, int iy){
 
 double LatticeBoltzman::dUxy(int ix, int iy){
     int i, ixnext, iynext; double rho0, Ux0next, sum;
-    rho0=rho(ix,iy,false);
+    
     for(i=0;i<Q;i++){
         ixnext=(ix+Vx[i]+Lx)%Lx; iynext=(iy+Vy[i]+Ly)%Ly;
+        rho0=rho(ixnext,iynext,false);
         Ux0next=Jx(ixnext,iynext,false)/rho0; 
         sum+=w[i]*Vy[i]*Ux0next;
     }
@@ -192,9 +195,10 @@ double LatticeBoltzman::dUxy(int ix, int iy){
 
 double LatticeBoltzman::dUyx(int ix, int iy){
     int i, ixnext, iynext; double rho0, Uy0next, sum;
-    rho0=rho(ix,iy,false);
+    
     for(i=0;i<Q;i++){
         ixnext=(ix+Vx[i]+Lx)%Lx; iynext=(iy+Vy[i]+Ly)%Ly;
+        rho0=rho(ixnext,iynext,false);
         Uy0next=Jy(ixnext,iynext,false)/rho0; 
         sum+=w[i]*Vx[i]*Uy0next;
     }
