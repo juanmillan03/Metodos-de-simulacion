@@ -309,7 +309,7 @@ void LatticeBoltzman::Print(const char * NameFile, double Ufan){
 }
 
 int main(int argc, char **argv){
-    double tau = 1.5;
+    double tau = 0.7;
     double Omega0 = std::atof(argv[1]);
     LatticeBoltzman Aire(tau);
     int t, tmax=1000;
