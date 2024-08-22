@@ -283,11 +283,11 @@ std::vector<double> LatticeBoltzman::CalculeFuerza(double Ufan) {
     F[0] += dF[0]; // sumar la componente x de la fuerza
     F[1] += dF[1]; // sumar la componente y de la fuerza
     //cout<<x<<' '<<y<<' '<<dF[0]<<' '<<dF[1]<<endl; //--------------> Archivo FuerzaVec.dat
-    cout<<x<<' '<<y<<' '<<dAx<<' '<<dAy<<endl; //--------------> Archivo VecArea.dat
+    //cout<<x<<' '<<y<<' '<<dAx<<' '<<dAy<<endl; //--------------> Archivo VecArea.dat
     }
 
 
-    //cout<<Re<<' '<<2*F[0]/(2*M_PI*R*Ufan*Ufan)<<endl; //--------------> Archivo CoefArrastre.dat
+    cout<<Re<<' '<<2*F[0]/(2*R*Ufan*Ufan)<<endl; //--------------> Archivo CoefArrastre.dat
     //cout<<Re<<' '<<F[1]<<endl; //--------------> Archivo FuerzaArrastre.dat
     return F;
 }
