@@ -8,7 +8,7 @@ const int Lx=512;
 const int Ly=64;
 const int ixc=128;
 const int iyc=32;
-const double N=1000;
+const double N=100;
 
 const int Q=9;
 
@@ -46,8 +46,8 @@ public:
     double sigmaxx(int ix,int iy);
     double sigmayy(int ix,int iy);
     double sigmaxy(int ix,int iy);
-    std::vector<double> Calcule_dF(int Px, int Py, double dAx, double dAy);
-    std::vector<double> CalculeFuerza();
+    std::vector<double> Calcule_dF(double Px, double Py, double dAx, double dAy);
+    std::vector<double> CalculeFuerza(double Ufan);
     void Print(const char * NameFile, double Ufan);
 };
 
@@ -158,7 +158,8 @@ void LatticeBoltzman::Adveccion(void){
 }
 
 double LatticeBoltzman::dUx(int ix, int iy){
-    int i, ixnext, iynext; double rho0, Ux0next, sum;
+    int i, ixnext, iynext; double rho0, Ux0next;
+    double sum=0;
     
     for(i=0;i<Q;i++){
         ixnext=(ix+Vx[i]+Lx)%Lx; iynext=(iy+Vy[i]+Ly)%Ly;
@@ -170,7 +171,8 @@ double LatticeBoltzman::dUx(int ix, int iy){
 }
 
 double LatticeBoltzman::dUy(int ix, int iy){
-    int i, ixnext, iynext; double rho0, Uy0next, sum;
+    int i, ixnext, iynext; double rho0, Uy0next;
+    double sum=0;
     
     for(i=0;i<Q;i++){
         ixnext=(ix+Vx[i]+Lx)%Lx; iynext=(iy+Vy[i]+Ly)%Ly;
@@ -182,7 +184,8 @@ double LatticeBoltzman::dUy(int ix, int iy){
 }
 
 double LatticeBoltzman::dUxy(int ix, int iy){
-    int i, ixnext, iynext; double rho0, Ux0next, sum;
+    int i, ixnext, iynext; double rho0, Ux0next;
+    double sum=0;
     
     for(i=0;i<Q;i++){
         ixnext=(ix+Vx[i]+Lx)%Lx; iynext=(iy+Vy[i]+Ly)%Ly;
@@ -194,7 +197,8 @@ double LatticeBoltzman::dUxy(int ix, int iy){
 }
 
 double LatticeBoltzman::dUyx(int ix, int iy){
-    int i, ixnext, iynext; double rho0, Uy0next, sum;
+    int i, ixnext, iynext; double rho0, Uy0next;
+    double sum=0;
     
     for(i=0;i<Q;i++){
         ixnext=(ix+Vx[i]+Lx)%Lx; iynext=(iy+Vy[i]+Ly)%Ly;
@@ -232,7 +236,7 @@ double LatticeBoltzman::sigmaxy(int ix,int iy){
     return (nu*rho0)*(dUxy(ix,iy)+dUyx(ix,iy));
 }
 
-std::vector<double> LatticeBoltzman::Calcule_dF(int Px, int Py, double dAx, double dAy){
+std::vector<double> LatticeBoltzman::Calcule_dF(double Px, double Py, double dAx, double dAy){
 
     int i, ix, iy, ixn, iyn;
     ix= int(Px);
@@ -259,33 +263,32 @@ std::vector<double> LatticeBoltzman::Calcule_dF(int Px, int Py, double dAx, doub
     return dF={dFx, dFy};
 }
 
-std::vector<double> LatticeBoltzman::CalculeFuerza() {
+std::vector<double> LatticeBoltzman::CalculeFuerza(double Ufan) {
     std::vector<double> F(2, 0.0); // Fx, Fy
     int ix, iy;
     double dA, dAx, dAy, x, y;
     double R = 8, R2=R*R; // radio del cilindro
     double theta = 2 * M_PI / N; // ángulo entre cada elemento
+    double Re = Ufan*2*R/nu;
     std::vector<double> dF;
+       
+    for (int i = 0; i < N; i++) {
+    x = R * cos(i * theta+theta/2)+ixc;
+    y = R * sin(i * theta+theta/2)+iyc;
+    dA = R * theta; 
+    dAx = dA*cos(i * theta+theta/2); 
+    dAy = dA*sin(i * theta+theta/2); 
 
-   for(ix=0;ix<Lx;ix++)
-        for(iy=0;iy<Ly;iy++){
-            if((ix-ixc)*(ix-ixc)+(iy-iyc)*(iy-iyc)==R2){
-                for (int i = 0; i < N; i++) {
-                    x = R * cos(i * theta+theta/2)+ixc;
-                    y = R * sin(i * theta+theta/2)+iyc;
-                    dA = R * theta; 
-                    dAx = dA*cos(i * theta+theta/2); 
-                    dAy = dA*sin(i * theta+theta/2); 
+    dF = Calcule_dF(x, y, dAx, dAy);
+    F[0] += dF[0]; // sumar la componente x de la fuerza
+    F[1] += dF[1]; // sumar la componente y de la fuerza
+    //cout<<x<<' '<<y<<' '<<dF[0]<<' '<<dF[1]<<endl; //--------------> Archivo FuerzaVec.dat
+    cout<<x<<' '<<y<<' '<<dAx<<' '<<dAy<<endl; //--------------> Archivo VecArea.dat
+    }
 
-                    dF = Calcule_dF(x, y, dAx, dAy);
-                    F[0] += dF[0]; // sumar la componente x de la fuerza
-                    F[1] += dF[1]; // sumar la componente y de la fuerza
 
-                }
-            }
-        }
-    
-    //cout<<nu<<' '<<2*F[0]/(1.0*2*R*0.1*0.1)<<endl; //--------------> Archivo CoefArrastre.dat
+    //cout<<Re<<' '<<2*F[0]/(2*M_PI*R*Ufan*Ufan)<<endl; //--------------> Archivo CoefArrastre.dat
+    //cout<<Re<<' '<<F[1]<<endl; //--------------> Archivo FuerzaArrastre.dat
     return F;
 }
 
@@ -322,8 +325,8 @@ int main(int argc, char **argv){
         
 
     }
-    Fuerza=Aire.CalculeFuerza();
-    cout<<tau<<' '<<Fuerza[0]<<' '<<Fuerza[1]<<endl;//--------------> Archivo Fuerzas.dat
+    Aire.CalculeFuerza(Ufan0);
+    //cout<<tau<<' '<<Fuerza[0]<<' '<<Fuerza[1]<<endl;//--------------> Archivo Fuerzas.dat
     
     //Print
     Aire.Print("Arrastre.dat", Ufan0);
