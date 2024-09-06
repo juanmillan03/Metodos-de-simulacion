@@ -7,7 +7,7 @@ using namespace std;
 
 const int Lx=128;
 const int Ly=128;
-const int Lz=1;
+const int Lz=128;
 
 const int Q=7;
 const double W0=1.0/4;
@@ -20,7 +20,7 @@ const double tau=0.5;
 const double Utau=1.0/tau;
 const double UmUtau= 1-Utau;
 
-const double D = 0.4;
+const double D = 0.7;
 
 
 
@@ -127,7 +127,7 @@ void LatticeBoltzman::Colision(void){
                 rho0=rho(ix,iy,iz,false); Jx0=Jx(ix,iy,iz,false); Jy0=Jy(ix,iy,iz,false); Jz0=Jz(ix,iy,iz,false); 
                 for(i=0;i<Q;i++){ //En cada direccion
                     //Bounce-Back
-                if (ix==Lx-1 || ix==0 || iy==Ly-1 || iy==0){
+                if (ix==Lx-1 || ix==0 || iy==Ly-1 || iy==0 || iz==Lz-1 || iz==0){
                     n0 = n(ix, iy, iz, 0);
                     n1 = n(ix, iy, iz, 1);
                     n3 = n(ix, iy, iz, 3);
@@ -159,7 +159,7 @@ void LatticeBoltzman::ImponerCampos(int t){
     int i, ix, iy, iz, n0;
     double lambda, omega, rho0, Jx0, Jy0, Jz0; lambda=10; omega=2*M_PI/lambda*C;
     //Una fuente oscilante en el medio
-    ix=Lx/2; iy=Ly/2; iz=0;
+    ix=Lx/2; iy=Ly/2; iz=Lz/2;
     rho0=10*sin(omega*t); Jx0=Jx(ix,iy,iz,false); Jy0=Jy(ix,iy,iz,false); Jz0=Jz(ix,iy,iz,false);
     for(i=0;i<Q;i++){
         n0=n(ix,iy,iz,i);
@@ -180,13 +180,12 @@ void LatticeBoltzman::Adveccion(void){
 }
 
 void LatticeBoltzman::Print(const char * NameFile){
-    ofstream MyFile(NameFile); double rho0; int ix, iy, iz;
+    ofstream MyFile(NameFile); double rho0; int ix, iy;
+    int iz = Lz/2;
     for(ix=0;ix<Lx;ix++){
         for(iy=0;iy<Ly;iy++){
-            for(iz=0;iz<Lz;iz++){
-                rho0=rho(ix,iy,iz,true);
-                MyFile<<ix<<" "<<iy<<" "<<rho0<<endl;
-            }
+            rho0=rho(ix,iy,iz,true);
+            MyFile<<ix<<" "<<iy<<" "<<rho0<<endl;
         }
         MyFile<<endl;
     }
@@ -195,7 +194,7 @@ void LatticeBoltzman::Print(const char * NameFile){
 
 int main(void){
     LatticeBoltzman Ondas;
-    int t, tmax=100;
+    int t, tmax=500;
     double rho0=0, Jx0=0, Jy0=0, Jz0=0;
 
     //INICIE
@@ -210,12 +209,17 @@ int main(void){
         Ondas.Colision();
         Ondas.ImponerCampos(t);
         Ondas.Adveccion();
+        if(t%50==0){
+            char filename[20];
+            sprintf(filename, "Ondas_%d.dat", t);
+            Ondas.Print(filename);
+        }
     }
 
     auto end = std::chrono::high_resolution_clock::now(); // End timer
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start); // Calculate duration in milliseconds
     std::cout << "Total time for all iterations: " << duration.count() << " milliseconds" << std::endl;
     //Print
-    Ondas.Print("Ondas3DTest.dat");
+    
     return 0;
 }
