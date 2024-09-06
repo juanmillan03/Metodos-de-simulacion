@@ -3,6 +3,7 @@
 #include <fstream>
 #include <omp.h>
 using namespace std;
+int lR=10;// metros 
 
 const int Lx=2000;
 const int Ly=1;

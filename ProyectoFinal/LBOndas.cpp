@@ -1,6 +1,7 @@
 #include <cmath>
 #include <iostream>
 #include <fstream>
+#include <omp.h>
 using namespace std;
 
 const int Lx=128;
@@ -144,21 +145,20 @@ void LatticeBoltzman::Colision(void){
 
 void LatticeBoltzman::ImponerCampos(int t){
     int i, ix, iy, n0;
-    double lambda, omega, rho0, Jx0, Jy0, rho1, Jx1, Jy1; lambda=10; omega=2*M_PI/lambda*C;
+    double lambda, omega, rho0, Jx0, Jy0; lambda=10; omega=2*M_PI/lambda*C;
     //Una fuente oscilante en el medio
-    ix=Lx/2; iy=Ly/2;
+    ix=Lx/2+Lx/4; iy=Ly/2;
     if(t<450){
-    rho0=10*sin(omega*t); Jx0=Jx(ix-ix/4,iy,false); Jy0=Jy(ix-ix/4,iy,false);
-    rho1=10*sin(omega*t+M_PI/2); Jx1=Jx(ix+ix/4,iy,false); Jy1=Jy(ix+ix/4,iy,false);
+    rho0=10*sin(omega*t); Jx0=Jx(ix,iy,false); Jy0=Jy(ix,iy,false);
     }
     for(i=0;i<Q;i++){
-        n0=n(ix-ix/4,iy,i);
+        n0=n(ix,iy,i);
         fnew[n0]=feq(rho0,Jx0,Jy0,i);
     }
-    for (i = 0; i < Q; i++) {
-        int n0 = n(ix+ix/4, iy, i);
-        fnew[n0]=feq(rho1, Jx1, Jy1, i); // Sumar la contribución de la fuente 2
-    }
+    // for (i = 0; i < Q; i++) {
+    //     int n0 = n(ix+ix/4, iy, i);
+    //     fnew[n0]=feq(rho1, Jx1, Jy1, i); // Sumar la contribución de la fuente 2
+    // }
     
 
 }
@@ -188,7 +188,7 @@ void LatticeBoltzman::Print(const char * NameFile){
 
 int main(void){
     LatticeBoltzman Ondas;
-    int t, tmax=1000;
+    int t, tmax=500;
     double rho0=0, Jx0=0, Jy0=0;
 
     //INICIE
@@ -201,7 +201,7 @@ int main(void){
         Ondas.Adveccion();
         if(t%20==0){
             char filename[50];
-            sprintf(filename, "D2/Ondas_t%d.txt", t+1);
+            sprintf(filename, "D2/Ondas_t%d.txt", t);
             
             // Usar el nombre de archivo generado
             Ondas.Print(filename);
