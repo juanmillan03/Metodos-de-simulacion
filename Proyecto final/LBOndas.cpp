@@ -16,6 +16,7 @@ const double AUX0=1-3*C2*(1-W0);
 const double tau=0.5;
 const double Utau=1.0/tau;
 const double UmUtau= 1-Utau;
+const double D=0.6;
 
 
 
@@ -102,27 +103,64 @@ void LatticeBoltzman::Inicie(double rho0, double Jx0, double Jy0){
 }
 
 void LatticeBoltzman::Colision(void){
-    int ix, iy, i, n0; double rho0, Jx0, Jy0;
+    int ix, iy, i, n0, n1, n2, n3, n4; double rho0, Jx0, Jy0;
     for(ix=0;ix<Lx;ix++)      //Para cada celda
         for(iy=0;iy<Ly;iy++){
             rho0=rho(ix,iy,false); Jx0=Jx(ix,iy,false); Jy0=Jy(ix,iy,false);
-            for(i=0;i<Q;i++){ //En cada direccion
-                n0=n(ix,iy,i);
-                fnew[n0]=UmUtau*f[n0]+Utau*feq(rho0,Jx0,Jy0,i);
+            if( ix==1 || ix==Lx-2 || iy==1 || iy==Ly-2 ){
+                n0 = n(ix, iy, 0);
+                n1 = n(ix, iy, 1);
+                n3 = n(ix, iy, 3);
+                n2 = n(ix, iy, 2);
+                n4 = n(ix, iy, 4);
+
+                fnew[n0] = D*f[n0];
+                fnew[n1] = D*f[n3];
+                fnew[n2] = D*f[n4];
+                fnew[n3] = D*f[n1];
+                fnew[n4] = D*f[n2];
+            }
+            if( ix==0 || ix==Lx-1 || iy==0 || iy==Ly-1 ){
+                n0 = n(ix, iy, 0);
+                n1 = n(ix, iy, 1);
+                n3 = n(ix, iy, 3);
+                n2 = n(ix, iy, 2);
+                n4 = n(ix, iy, 4);
+
+                fnew[n0] = 0;
+                fnew[n1] = 0;
+                fnew[n2] = 0;
+                fnew[n3] = 0;
+                fnew[n4] = 0;
+            }
+            else{
+                for(i=0;i<Q;i++){ //En cada direccion
+                    n0=n(ix,iy,i);
+                    fnew[n0]=UmUtau*f[n0]+Utau*feq(rho0,Jx0,Jy0,i);
+                }
             }
         }
 }
 
 void LatticeBoltzman::ImponerCampos(int t){
     int i, ix, iy, n0;
-    double lambda, omega, rho0, Jx0, Jy0; lambda=10; omega=2*M_PI/lambda*C;
+    double lambda, omega, rho0, Jx0, Jy0, rho1, Jx1, Jy1; lambda=10; omega=2*M_PI/lambda*C;
     //Una fuente oscilante en el medio
     ix=Lx/2; iy=Ly/2;
-    rho0=10*sin(omega*t); Jx0=Jx(ix,iy,false); Jy0=Jy(ix,iy,false);
+    if(t<450){
+    rho0=10*sin(omega*t); Jx0=Jx(ix-ix/4,iy,false); Jy0=Jy(ix-ix/4,iy,false);
+    rho1=10*sin(omega*t+M_PI/2); Jx1=Jx(ix+ix/4,iy,false); Jy1=Jy(ix+ix/4,iy,false);
+    }
     for(i=0;i<Q;i++){
-        n0=n(ix,iy,i);
+        n0=n(ix-ix/4,iy,i);
         fnew[n0]=feq(rho0,Jx0,Jy0,i);
     }
+    for (i = 0; i < Q; i++) {
+        int n0 = n(ix+ix/4, iy, i);
+        fnew[n0]=feq(rho1, Jx1, Jy1, i); // Sumar la contribución de la fuente 2
+    }
+    
+
 }
 
 void LatticeBoltzman::Adveccion(void){
@@ -150,7 +188,7 @@ void LatticeBoltzman::Print(const char * NameFile){
 
 int main(void){
     LatticeBoltzman Ondas;
-    int t, tmax=100;
+    int t, tmax=1000;
     double rho0=0, Jx0=0, Jy0=0;
 
     //INICIE
@@ -161,8 +199,13 @@ int main(void){
         Ondas.Colision();
         Ondas.ImponerCampos(t);
         Ondas.Adveccion();
+        if(t%20==0){
+            char filename[50];
+            sprintf(filename, "D2/Ondas_t%d.txt", t+1);
+            
+            // Usar el nombre de archivo generado
+            Ondas.Print(filename);
+        }
     }
-    //Print
-    Ondas.Print("Ondas.dat");
     return 0;
 }

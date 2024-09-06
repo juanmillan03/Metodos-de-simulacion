@@ -1,12 +1,13 @@
 //CA de Difusion 1D en C++
 #include  <iostream>
+#include <vector>
 #include  <cmath>
+#include <numeric>
 #include "Random64.h"
 using namespace std;
 
 const int Lx=256;
 const int L2=Lx*Lx;
-const double p=0.25;
 const double p0=0.25;
 
 
@@ -19,7 +20,7 @@ public:
   void Inicie(int N, double mu,double sigma,Crandom & ran64);
   int Frontera(int x, int y);
   double rho(int ix);
-  void Colisione(Crandom & ran64);
+  void Colisione(Crandom & ran64,double p);
   void Adveccione(void);
   void Show(void);
 };
@@ -50,7 +51,7 @@ int LatticeGas::Frontera(int x, int y){
   return Lista(x, y);
 }
 
-void LatticeGas::Colisione(Crandom & ran64){
+void LatticeGas::Colisione(Crandom & ran64,double p){
   int x, y;
   double probabilidad;
 
@@ -112,22 +113,49 @@ std::pair<double, double> GetSigma2(LatticeGas * Difusion){
   Sigma2y/=N;
   return std::make_pair(Sigma2x, Sigma2y);
 }
+
+pair<double, double> linearRegression(const std::vector<double>& x, const std::vector<double>& y) {
+    int n = x.size();
+    double sumX = std::accumulate(x.begin(), x.end(), 0.0);
+    double sumY = std::accumulate(y.begin(), y.end(), 0.0);
+    double sumXY = 0.0;
+    double sumXX = 0.0;
+
+    for (int i = 0; i < n; i++) {
+        sumXY += x[i] * y[i];
+        sumXX += x[i] * x[i];
+    }
+
+    double m = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+    double b = (sumY - m * sumX) / n;
+
+    return make_pair(m, b);
+  }
 int main(int argc, char **argv){
-  double tmax = std::atof(argv[1]);
+  
+  double p=std::atof(argv[1]);
+  double tmax = 350;
   LatticeGas Difusion;
   Crandom ran64(1);
   double mu=Lx/2, sigma=16;
   int t;
   int N=2400;
+  vector<double> T(tmax,0.0);
+  vector<double> S2x(tmax,0.0);
+  vector<double> S2y(tmax,0.0);
   
   Difusion.Borrese();
   Difusion.Inicie(N,mu,sigma,ran64);
   for(t=0;t<tmax;t++){
     std::clog<<t<<" "<<GetSigma2(&Difusion).first<<" "<<GetSigma2(&Difusion).second<<std::endl;
-    Difusion.Colisione(ran64);
+    T[t]=t;S2x[t]=GetSigma2(&Difusion).first;S2y[t]=GetSigma2(&Difusion).second;
+    Difusion.Colisione(ran64,p);
     Difusion.Adveccione();
   }
-  Difusion.Show();
+  pair<double, double> result1= linearRegression(T, S2x);
+  pair<double, double> result2= linearRegression(T, S2y);
+  std::cout<<p<<" "<<(p+p0)/(2*(1-(p+p0)))<<" "<<result1.first<<" "<<result2.first<<std::endl;
+  //Difusion.Show();
   
   
   return 0;
