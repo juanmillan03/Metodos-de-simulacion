@@ -5,9 +5,9 @@
 #include <omp.h>
 using namespace std;
 
-const int Lx=120;
-const int Ly=120;
-const int Lz=120;
+const int Lx=420;
+const int Ly=420;
+const int Lz=420;
 
 
 
@@ -163,14 +163,20 @@ void LatticeBoltzman::Colision(void){
             }
 }
 void LatticeBoltzman::ImponerCampos(int t){
-    int i, ix, iy, iz, n0;
-    double lambda, omega, rho0, Jx0, Jy0, Jz0; lambda=10; omega=2*M_PI/lambda*C;
+    int i, ix, iy, iz, n0,n1,n2;
+    double lambda, omega, rho0, Jx0, Jy0, Jz0,rho1, Jx1, Jy1, Jz1,rho2, Jx2, Jy2, Jz2; lambda=13; omega=2*M_PI/lambda*C;
     //Una fuente oscilante en el medio
     ix=Lx/2; iy=Ly/2; iz=Lz/2;
-    rho0=10*sin(omega*t); Jx0=Jx(ix,iy,iz,false); Jy0=Jy(ix,iy,iz,false); Jz0=Jz(ix,iy,iz,false);
+    rho0=20*sin(omega*t); Jx0=Jx(ix,iy,iz,false); Jy0=Jy(ix,iy,iz,false); Jz0=Jz(ix,iy,iz,false);
+    rho1=20*sin(omega*t+M_PI/2); Jx1=Jx(ix,iy-iy/2,iz+iz/2,false); Jy1=Jy(ix,iy-iy/2,iz+iz/2,false); Jz1=Jz(ix,iy-iy/2,iz+iz/2,false);
+    rho2=20*sin(omega*t-M_PI/2); Jx2=Jx(ix,iy+iy/2,iz-iz/2,false); Jy2=Jy(ix,iy+iy/2,iz-iz/2,false); Jz2=Jz(ix,iy+iy/2,iz-iz/2,false);
     for(i=0;i<Q;i++){
         n0=n(ix,iy,iz,i);
         fnew[n0]=feq(rho0,Jx0,Jy0,Jz0,i);
+        n1=n(ix,iy-iy/2,iz+iz/2,i);
+        fnew[n1]=feq(rho1,Jx1,Jy1,Jz1,i);
+        n2=n(ix,iy+iy/2,iz-iz/2,i);
+        fnew[n2]=feq(rho2,Jx2,Jy2,Jz2,i);
     }
 }
 void LatticeBoltzman::Adveccion(void){
@@ -190,7 +196,7 @@ void LatticeBoltzman::Print(const char * NameFile,int z){
     for(ix=0;ix<Lx;ix++){
         for(iy=0;iy<Ly;iy++){
             rho0=rho(ix,iy,iz,true);
-            MyFile<<ix<<" "<<iy<<" "<<rho0<<endl;
+            MyFile<<(float)ix/10<<" "<<(float)iy/10<<" "<<rho0<<endl;
         }
         MyFile<<endl;
     }
