@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Lista de números de threads que quieres probar
-threads_list=(1 2 3 4 5)
+threads_list=(2 4 6 8 10 12 16 18)
 
 # Nombre del ejecutable
 executable="./LBM"

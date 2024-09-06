@@ -5,9 +5,9 @@
 #include <omp.h>
 using namespace std;
 
-const int Lx=420;
-const int Ly=420;
-const int Lz=420;
+const int Lx=320;
+const int Ly=320;
+const int Lz=320;
 
 
 
