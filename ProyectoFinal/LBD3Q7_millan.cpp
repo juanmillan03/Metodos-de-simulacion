@@ -1,13 +1,14 @@
 #include <cmath>
 #include <iostream>
 #include <fstream>
+#include <string>
+#include <vector>
 #include <chrono>
 #include <omp.h>
-using namespace std;
 
-const int Lx=320;
-const int Ly=320;
-const int Lz=320;
+const int Lx=120;
+const int Ly=120;
+const int Lz=120;
 
 
 
@@ -22,7 +23,7 @@ const double tau=0.5;
 const double Utau=1.0/tau;
 const double UmUtau= 1-Utau;
 
-const double D = 0.7;
+const double D = 0.987;
 
 
 
@@ -47,6 +48,7 @@ public:
     void ImponerCampos(int t);
     void Adveccion(void);
     void Print(const char * NameFile,int z);
+    friend class Fuentes; // Declarar a la clase Fuentes como amiga
 };
 LatticeBoltzman::LatticeBoltzman(void){
     //Cargar los pesos
@@ -162,23 +164,7 @@ void LatticeBoltzman::Colision(void){
                 }
             }
 }
-void LatticeBoltzman::ImponerCampos(int t){
-    int i, ix, iy, iz, n0,n1,n2;
-    double lambda, omega, rho0, Jx0, Jy0, Jz0,rho1, Jx1, Jy1, Jz1,rho2, Jx2, Jy2, Jz2; lambda=13; omega=2*M_PI/lambda*C;
-    //Una fuente oscilante en el medio
-    ix=Lx/2; iy=Ly/2; iz=Lz/2;
-    rho0=20*sin(omega*t); Jx0=Jx(ix,iy,iz,false); Jy0=Jy(ix,iy,iz,false); Jz0=Jz(ix,iy,iz,false);
-    rho1=20*sin(omega*t+M_PI/2); Jx1=Jx(ix,iy-iy/2,iz+iz/2,false); Jy1=Jy(ix,iy-iy/2,iz+iz/2,false); Jz1=Jz(ix,iy-iy/2,iz+iz/2,false);
-    rho2=20*sin(omega*t-M_PI/2); Jx2=Jx(ix,iy+iy/2,iz-iz/2,false); Jy2=Jy(ix,iy+iy/2,iz-iz/2,false); Jz2=Jz(ix,iy+iy/2,iz-iz/2,false);
-    for(i=0;i<Q;i++){
-        n0=n(ix,iy,iz,i);
-        fnew[n0]=feq(rho0,Jx0,Jy0,Jz0,i);
-        n1=n(ix,iy-iy/2,iz+iz/2,i);
-        fnew[n1]=feq(rho1,Jx1,Jy1,Jz1,i);
-        n2=n(ix,iy+iy/2,iz-iz/2,i);
-        fnew[n2]=feq(rho2,Jx2,Jy2,Jz2,i);
-    }
-}
+void LatticeBoltzman::ImponerCampos(int t){}
 void LatticeBoltzman::Adveccion(void){
     int ix, iy, iz, i, ixnext, iynext, iznext, n0, n0next;
     for(ix=0;ix<Lx;ix++)      //Para cada celda
@@ -191,33 +177,85 @@ void LatticeBoltzman::Adveccion(void){
                 } 
 }
 void LatticeBoltzman::Print(const char * NameFile,int z){
-    ofstream MyFile(NameFile); double rho0; int ix, iy;
+    std::ofstream MyFile(NameFile); double rho0; int ix, iy;
     int iz = z;
     for(ix=0;ix<Lx;ix++){
         for(iy=0;iy<Ly;iy++){
             rho0=rho(ix,iy,iz,true);
-            MyFile<<(float)ix/10<<" "<<(float)iy/10<<" "<<rho0<<endl;
+            MyFile<<(float)ix/10<<" "<<(float)iy/10<<" "<<rho0<<std::endl;
         }
-        MyFile<<endl;
+        MyFile<<std::endl;
     }
     MyFile.close();
 }
+//-------------------------------------------------Clase Fuentes-------------------------------------------------
+class Fuentes {
+private:
+    std::string archivotxt;
+    int ix, iy, iz;
+    std::vector<double> sonido;
+    LatticeBoltzman &LB;
+public:
+    Fuentes(std::string nombreArchivo, LatticeBoltzman& LBn, int Ix, int Iy, int Iz, int tmax)
+        : archivotxt(nombreArchivo), ix(Ix), iy(Iy), iz(Iz), LB(LBn), sonido(tmax,0) {
+        std::cout << "Archivo " << std::endl;
+        std::ifstream archivo(nombreArchivo);
+        if (!archivo.is_open()) {
+            std::cerr << "Error al abrir el archivo: " << nombreArchivo << std::endl;
+            return;
+        }
+        double valor;
+        int i = 0;
+        while (archivo >> valor && i < tmax) {
+            sonido[i] = valor;
+            i++;
+        }
+        archivo.close();
+        std::cout << "Archivo " << nombreArchivo << " leído con éxito. Valores almacenados en el vector 'sonido'." << std::endl;
+        // std::cout << "Contenido del vector 'sonido':" << std::endl;
+        // for (int i = 0; i < tmax; i++) {
+        //     std::cout << "sonido[" << i << "] = " << sonido[i] << std::endl;
+        // }
+
+    }
+    void ImponerFuente(int t);
+    friend class LatticeBoltzman;
+};
+
+
+
+void Fuentes::ImponerFuente(int t) {
+    double rho0 =sonido[t];//amplitud * sin(omega * t);
+    double Jx0 = LB.Jx(ix, iy, iz, false);
+    double Jy0 = LB.Jy(ix, iy, iz, false);
+    double Jz0 = LB.Jz(ix, iy, iz, false);
+    for (int i = 0; i < Q; i++) {
+        int n0 = LB.n(ix, iy, iz, i);
+        LB.fnew[n0] = LB.feq(rho0, Jx0, Jy0, Jz0, i);
+    }
+}
+
+//-------------------------------------------------Función principal-------------------------------------------------
+
 int main(void){
     LatticeBoltzman Ondas;
-    int t, tmax=1000;
+    int t, tmax=500;
     double rho0=0, Jx0=0, Jy0=0, Jz0=0;
 
     //INICIE
+
     Ondas.Inicie(rho0,Jx0,Jy0,Jz0);
     
-    //Correr
+    //Corre
     // ...
 
     auto start = std::chrono::high_resolution_clock::now(); // Start timer
-
+    // Fuentes
+    Fuentes fuente1("Fuentes/fuente_1.txt", Ondas, Lx/2, Ly-10, Lz/2,tmax);
     for(t=0;t<tmax;t++){
         Ondas.Colision();
         Ondas.ImponerCampos(t);
+        fuente1.ImponerFuente(t);
         Ondas.Adveccion();
         if(t%20==0){
             #pragma omp for
