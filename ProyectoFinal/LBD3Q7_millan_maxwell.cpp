@@ -274,7 +274,7 @@ int main(void){
             #pragma omp for
             for(int z=Lz/4;z<Lz;z=z+Lz/4){
                 char filename[30];
-                sprintf(filename, "D3/%d/Ondas_t%d.txt", z,t);
+                sprintf(filename, "D3_maxwell/%d/Ondas_t%d.txt", z,t);
                 Ondas.Print(filename,z);
             }
         }
