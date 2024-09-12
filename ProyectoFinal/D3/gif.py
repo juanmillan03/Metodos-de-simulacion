@@ -35,7 +35,7 @@ for directory in directories:
     # Definir límites de los ejes (ajusta según tus datos)
     x_min, x_max = 0, 10  # Rango para el eje x
     y_min, y_max = 0, 10  # Rango para el eje y
-    presion_min, presion_max = -0.5, 0.5  # Rango para la presión (eje de color)
+    presion_min, presion_max = -1, 1  # Rango para la presión (eje de color)
 
     # Loop sobre cada archivo y generar un gráfico
     for filename in file_list:

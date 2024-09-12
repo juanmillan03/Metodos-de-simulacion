@@ -5,6 +5,7 @@
 #include <vector>
 #include <chrono>
 #include <omp.h>
+#include "Random64.h"
 
 const int Lx=120;
 const int Ly=120;
@@ -198,7 +199,6 @@ private:
 public:
     Fuentes(std::string nombreArchivo, LatticeBoltzman& LBn, int Ix, int Iy, int Iz, int tmax)
         : archivotxt(nombreArchivo), ix(Ix), iy(Iy), iz(Iz), LB(LBn), sonido(tmax,0) {
-        std::cout << "Archivo " << std::endl;
         std::ifstream archivo(nombreArchivo);
         if (!archivo.is_open()) {
             std::cerr << "Error al abrir el archivo: " << nombreArchivo << std::endl;
@@ -211,7 +211,7 @@ public:
             i++;
         }
         archivo.close();
-        std::cout << "Archivo " << nombreArchivo << " leído con éxito. Valores almacenados en el vector 'sonido'." << std::endl;
+        // std::cout << "Archivo " << nombreArchivo << " leído con éxito. Valores almacenados en el vector 'sonido'." << std::endl;
         // std::cout << "Contenido del vector 'sonido':" << std::endl;
         // for (int i = 0; i < tmax; i++) {
         //     std::cout << "sonido[" << i << "] = " << sonido[i] << std::endl;
@@ -251,13 +251,26 @@ int main(void){
 
     auto start = std::chrono::high_resolution_clock::now(); // Start timer
     // Fuentes
-    Fuentes fuente1("Fuentes/fuente_1.txt", Ondas, Lx/2, Ly-10, Lz/2,tmax);
+    Crandom ran64(23);
+    const int Numero_fuentes=10;
+    Fuentes* fuentes[Numero_fuentes];
+    int random_number_x;
+    int random_number_y;
+    int txt_number;
+    
+    for(int r=0;r<Numero_fuentes;r++){// Get a random integer between 0 and 120
+        random_number_x= ran64.intRange(2,Lx-2);
+        random_number_y= ran64.intRange(2,Ly-2);
+        txt_number=ran64.intRange(1,4);
+        fuentes[r] = new Fuentes("Fuentes/fuente_" + std::to_string(txt_number) + ".txt", Ondas, random_number_x, random_number_y, Lz/2,tmax); 
+    }
+    
     for(t=0;t<tmax;t++){
         Ondas.Colision();
         Ondas.ImponerCampos(t);
-        fuente1.ImponerFuente(t);
+        for(int r=0;r<Numero_fuentes;r++)fuentes[r]->ImponerFuente(t);
         Ondas.Adveccion();
-        if(t%20==0){
+        if(t%10==0){
             #pragma omp for
             for(int z=Lz/4;z<Lz;z=z+Lz/4){
                 char filename[30];

@@ -12,6 +12,7 @@ public:
   unsigned int int32(){return (unsigned int) int64();};
   double exponencial(float tau);
   double gauss(float mu,float sigma);
+  int intRange(int min, int max);
 };
 Crandom::Crandom(unsigned long long j){
     v=4101842887655102017LL; w=1;
@@ -33,5 +34,7 @@ double Crandom::exponencial(float tau){
 double Crandom:: gauss(float mu,float sigma){
   return sigma*sqrt(-2*log(r()))*cos(2*M_PI*r())+mu;
 }
-
+int Crandom::intRange(int min, int max) {
+    return int32() % (max - min + 1) + min;
+}
 
