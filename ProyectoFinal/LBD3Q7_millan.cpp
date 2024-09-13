@@ -252,15 +252,15 @@ int main(void){
     auto start = std::chrono::high_resolution_clock::now(); // Start timer
     // Fuentes
     Crandom ran64(23);
-    const int Numero_fuentes=10;
+    const int Numero_fuentes=30;
     Fuentes* fuentes[Numero_fuentes];
     int random_number_x;
     int random_number_y;
     int txt_number;
     
     for(int r=0;r<Numero_fuentes;r++){// Get a random integer between 0 and 120
-        random_number_x= ran64.intRange(2,Lx-2);
-        random_number_y= ran64.intRange(2,Ly-2);
+        random_number_x= ran64.intRange(20,Lx-20);
+        random_number_y= ran64.intRange(20,Ly-20);
         txt_number=ran64.intRange(1,4);
         fuentes[r] = new Fuentes("Fuentes/fuente_" + std::to_string(txt_number) + ".txt", Ondas, random_number_x, random_number_y, Lz/2,tmax); 
     }
@@ -278,6 +278,7 @@ int main(void){
                 Ondas.Print(filename,z);
             }
         }
+        std::clog<<t<<"     "<<Ondas.rho(Lz/2,Ly/2,Lz/2,true)<<std::endl;
     }
 
     auto end = std::chrono::high_resolution_clock::now(); // End timer

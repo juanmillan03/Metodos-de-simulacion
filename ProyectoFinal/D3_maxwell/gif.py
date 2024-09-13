@@ -6,9 +6,9 @@ import os
 import re
 
 # Lista de directorios donde están los archivos
-directories = ["D3/80/", "D3/160/", "D3/240/"]
+directories = ["D3_maxwell/80/", "D3_maxwell/160/", "D3_maxwell/240/"]
 # Directorio donde se guardarán los GIFs
-gif_directory = "D3/"
+gif_directory = "D3_maxwell/"
 
 # Función para extraer el número de tiempo del nombre del archivo
 def extract_time_from_filename(filename):
