@@ -183,7 +183,7 @@ void LatticeBoltzman::Print(const char * NameFile,int z){
     for(ix=0;ix<Lx;ix++){
         for(iy=0;iy<Ly;iy++){
             rho0=rho(ix,iy,iz,true);
-            MyFile<<(float)ix/10<<" "<<(float)iy/10<<" "<<rho0<<std::endl;
+            MyFile<<(float)ix/10<<" "<<(float)iy/10<<" "<<rho0*C*C<<std::endl;
         }
         MyFile<<std::endl;
     }
@@ -207,7 +207,7 @@ public:
         double valor;
         int i = 0;
         while (archivo >> valor && i < tmax) {
-            sonido[i] = valor;
+            sonido[i] = 2e-5*std::pow(10,valor/20)*std::pow(C,-2);
             i++;
         }
         archivo.close();
@@ -239,8 +239,8 @@ void Fuentes::ImponerFuente(int t) {
 
 int main(void){
     LatticeBoltzman Ondas;
-    int t, tmax=500;
-    double rho0=0, Jx0=0, Jy0=0, Jz0=0;
+    int t, tmax=1000;
+    double rho0=0.888, Jx0=0, Jy0=0, Jz0=0;
 
     //INICIE
 
@@ -278,7 +278,7 @@ int main(void){
                 Ondas.Print(filename,z);
             }
         }
-        std::clog<<t<<"     "<<Ondas.rho(Lz/2,Ly/2,Lz/2,true)<<std::endl;
+        std::clog<<t<<"     "<<Ondas.rho(Lz/2,Ly/2,Lz/2,true)*C*C<<std::endl;
     }
 
     auto end = std::chrono::high_resolution_clock::now(); // End timer
