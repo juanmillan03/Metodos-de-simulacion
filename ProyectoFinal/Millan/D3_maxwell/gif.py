@@ -6,7 +6,7 @@ import os
 import re
 
 # Lista de directorios donde están los archivos
-directories = ["D3_maxwell/4/"]
+directories = ["D3_maxwell/8/"]
 # Directorio donde se guardarán los GIFs
 gif_directory = "D3_maxwell/"
 
