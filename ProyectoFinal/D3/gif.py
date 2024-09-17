@@ -6,7 +6,7 @@ import os
 import re
 
 # Lista de directorios donde están los archivos
-directories = ["D3/30/", "D3/60/", "D3/90/"]
+directories = ["D3/2/", "D3/4/", "D3/6/", "D3/8/"]
 # Directorio donde se guardarán los GIFs
 gif_directory = "D3/"
 
