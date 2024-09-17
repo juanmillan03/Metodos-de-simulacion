@@ -11,8 +11,8 @@
 
 
 const double deltax=0.5;//metro por celda
-const double Lx_real=100;
-const double Ly_real=100;
+const double Lx_real=26;
+const double Ly_real=20;
 const double Lz_real=8;
 const int Lx=Lx_real/deltax+2;
 const int Ly=Ly_real/deltax+2;
@@ -156,7 +156,7 @@ void LatticeBoltzman::Colision(void){
 }
 void LatticeBoltzman::ImponerCampos(int t){
     int i, ix, iy, iz, n0;
-    double lambda, omega, rho0, Jx0, Jy0, Jz0; lambda=50; omega=2*M_PI/lambda*C;
+    double lambda, omega, rho0, Jx0, Jy0, Jz0; lambda=10*deltax; omega=2*M_PI/lambda*C;
     //Una fuente oscilante en el medio
     ix=Lx/4; iy=Ly/2; iz=4;
     if(t<5/deltaT){
