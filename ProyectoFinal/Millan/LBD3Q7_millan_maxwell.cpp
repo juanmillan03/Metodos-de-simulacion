@@ -299,7 +299,7 @@ int main(void){
             std::cout << "Imprimendo: " << t << " click "<<(double)t*deltaT<<" segundos"<< std::endl;
             // Crear la carpeta D3/z si no existe
             char directory[30];
-            sprintf(directory, "D3/%d", int(4/deltax));
+            sprintf(directory, "D3_maxwell/%d", int(4/deltax));
 
             // Verificar si el directorio existe, si no, crearlo
             struct stat st = {0};
