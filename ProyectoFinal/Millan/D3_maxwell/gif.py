@@ -88,7 +88,7 @@ for directory in directories:
     try:
         # Definir el nombre del GIF basado en el nombre del directorio
         gif_filename = f"{gif_directory}evolucion_sistema_{os.path.basename(directory.rstrip('/'))}.gif"
-        imageio.mimsave(gif_filename, images, duration=1, loop=0)
+        imageio.mimsave(gif_filename, images, duration=4, loop=0)
         print(f"GIF creado exitosamente como '{gif_filename}'")
     except Exception as e:
         print(f"Error al crear el GIF para el directorio {directory}: {e}")
