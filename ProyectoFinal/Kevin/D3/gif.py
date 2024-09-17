@@ -35,7 +35,7 @@ for directory in directories:
     # Definir límites de los ejes (ajusta según tus datos)
     x_min, x_max = 0, 10  # Rango para el eje x
     y_min, y_max = 0, 10  # Rango para el eje y
-    presion_min, presion_max = -1,1  # Rango para la presión (eje de color
+    presion_min, presion_max = -0.2,0.2  # Rango para la presión (eje de color
 
     # Loop sobre cada archivo y generar un gráfico
     for filename in file_list:
@@ -55,7 +55,7 @@ for directory in directories:
             
             # Crear la figura
             plt.figure(figsize=(10, 6))
-            scatter = plt.scatter(x, y, c=presion, cmap='magma')
+            scatter = plt.scatter(x, y, c=presion, cmap='magma',vmin=presion_min,vmax=presion_max)
             #scatter = plt.scatter(x, y, c=presion, cmap='magma')
             plt.colorbar(scatter, label='Presión')
             plt.xlabel('x(m)')
@@ -88,7 +88,7 @@ for directory in directories:
     try:
         # Definir el nombre del GIF basado en el nombre del directorio
         gif_filename = f"{gif_directory}evolucion_sistema_{os.path.basename(directory.rstrip('/'))}.gif"
-        imageio.mimsave(gif_filename, images, duration=4, loop=0)
+        imageio.mimsave(gif_filename, images, duration=10, loop=0)
         print(f"GIF creado exitosamente como '{gif_filename}'")
     except Exception as e:
         print(f"Error al crear el GIF para el directorio {directory}: {e}")

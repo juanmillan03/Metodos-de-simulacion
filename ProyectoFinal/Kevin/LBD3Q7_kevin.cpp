@@ -11,12 +11,16 @@
 
 
 const double deltax=1;//metro por celda
-const double Lx_real=100;
-const double Ly_real=100;
-const double Lz_real=8;
+const double Lx_real=50;
+const double Ly_real=50;
+const double LzPequeño_real=25;
+const double R_real=Lx_real/4;
+const double Lz_real=LzPequeño_real+R_real+1;
+const int LzPequeño=LzPequeño_real/deltax+2;
 const int Lx=Lx_real/deltax+2;
 const int Ly=Ly_real/deltax+2;
 const int Lz=Lz_real/deltax+2;
+const int R=R_real/deltax+2;
 const double deltaT=0.5*deltax/300.0;//segundo por click 
 
 
@@ -32,7 +36,7 @@ const double tau=0.5;
 const double Utau=1.0/tau;
 const double UmUtau= 1-Utau;
 
-const double D = 0.987;
+const double D_paredes = 0.987;
 
 
 
@@ -51,13 +55,17 @@ public:
     double Jx(int ix, int iy, int iz, bool UseNew);
     double Jy(int ix, int iy, int iz, bool UseNew);
     double Jz(int ix, int iy, int iz, bool UseNew);
+    bool Pared(int ix, int iy, int iz);
+    bool Techo(int ix, int iy, int iz);
+    void BounceBack(int ix, int iy, int iz, double D);
     double feq(double rho0, double Jx0, double Jy0, double Jz0, int i);
     void Inicie(double rho0, double Jx0, double Jy0, double Jz0);
     void Colision(void);
     void ImponerCampos(int t);
     void Adveccion(void);
     void Print(const char * NameFile,int z);
-    friend class Fuentes; // Declarar a la clase Fuentes como amiga
+    friend class Fuentes;
+    friend class BounceBack; // Declarar a la clase Fuentes como amiga
 };
 LatticeBoltzman::LatticeBoltzman(void){
     //Cargar los pesos
@@ -105,6 +113,39 @@ double LatticeBoltzman::Jz(int ix, int iy, int iz, bool UseNew){
     }
     return sum;
 }
+
+bool LatticeBoltzman::Pared(int ix, int iy, int iz){
+    if (ix==Lx-2 || ix==1 || iy==Ly-2 || iy==1 || iz==Lz-2 || iz==1){
+        return true;
+    }
+    else{
+        return false;
+    }
+}
+
+bool LatticeBoltzman::Techo(int ix, int iy, int iz){
+    int R2=R*R;
+    int ixc=Lx/2, izc=LzPequeño;
+
+    if((ix-ixc)*(ix-ixc)+(iz-izc)*(iz-izc)>=R2 && iz>=LzPequeño){
+        return true;
+    }
+    else{
+        return false;
+    }
+}
+
+void LatticeBoltzman::BounceBack(int ix, int iy, int iz, double D){
+    int n0, n1, n2, n3, n4, n5, n6;
+
+    n0 = n(ix, iy, iz, 0);n1 = n(ix, iy, iz, 1);n3 = n(ix, iy, iz, 3);
+    n2 = n(ix, iy, iz, 2);n4 = n(ix, iy, iz, 4);
+    n5 = n(ix, iy, iz, 5);n6 = n(ix, iy, iz, 6);
+    fnew[n0] = D*f[n0];fnew[n1] = D*f[n2];fnew[n2] = D*f[n1];
+    fnew[n3] = D*f[n4];fnew[n4] = D*f[n3];
+    fnew[n5] = D*f[n6];fnew[n6] = D*f[n5];
+}
+
 double LatticeBoltzman::feq(double rho0, double Jx0, double Jy0, double Jz0, int i){
     if(i>0)
         return 4*w[i]*(C2*rho0+Vx[i]*Jx0+Vy[i]*Jy0+Vz[i]*Jz0);
@@ -129,13 +170,8 @@ void LatticeBoltzman::Colision(void){
         for(iy=0;iy<Ly;iy++)
             for(iz=0;iz<Lz;iz++){
                 rho0=rho(ix,iy,iz,false); Jx0=Jx(ix,iy,iz,false); Jy0=Jy(ix,iy,iz,false); Jz0=Jz(ix,iy,iz,false); 
-                if (ix==Lx-2 || ix==1 || iy==Ly-2 || iy==1 || iz==Lz-2 || iz==1){
-                    n0 = n(ix, iy, iz, 0);n1 = n(ix, iy, iz, 1);n3 = n(ix, iy, iz, 3);
-                    n2 = n(ix, iy, iz, 2);n4 = n(ix, iy, iz, 4);
-                    n5 = n(ix, iy, iz, 5);n6 = n(ix, iy, iz, 6);
-                    fnew[n0] = D*f[n0];fnew[n1] = D*f[n2];fnew[n2] = D*f[n1];
-                    fnew[n3] = D*f[n4];fnew[n4] = D*f[n3];
-                    fnew[n5] = D*f[n6];fnew[n6] = D*f[n5];
+                if (Pared(ix,iy,iz) || Techo(ix,iy,iz)){
+                    BounceBack(ix,iy,iz,D_paredes);
                 }
                 else if (ix==Lx-1 || ix==0 || iy==Ly-1 || iy==0 || iz==Lz-1 || iz==0){
                     n0 = n(ix, iy, iz, 0);n1 = n(ix, iy, iz, 1);n3 = n(ix, iy, iz, 3);
@@ -177,12 +213,12 @@ void LatticeBoltzman::Adveccion(void){
                 } 
 }
 void LatticeBoltzman::Print(const char * NameFile,int z){
-    std::ofstream MyFile(NameFile); double rho0; int ix, iy;
-    int iz = z;
+    std::ofstream MyFile(NameFile); double rho0; int ix, iz;
+    int iy = z;
     for(ix=0;ix<Lx;ix++){
-        for(iy=0;iy<Ly;iy++){
+        for(iz=0;iz<Lz;iz++){
             rho0=rho(ix,iy,iz,true);
-            MyFile<<(float)ix*deltax<<" "<<(float)iy*deltax<<" "<<rho0<<std::endl;
+            MyFile<<(float)ix*deltax<<" "<<(float)iz*deltax<<" "<<rho0<<std::endl;
         }
         MyFile<<std::endl;
     }
@@ -286,7 +322,7 @@ int main(void){
             fuentes[r]->ImponerFuente(t);
         }
         Ondas.Adveccion();
-        if(t % int(0.4/deltaT) == 0){
+        if(t % int(1/deltaT) == 0){
             std::cout << "Imprimendo: " << t << " click "<<(double)t*deltaT<<" segundos"<< std::endl;
             // Crear la carpeta D3/z si no existe
             char directory[30];
