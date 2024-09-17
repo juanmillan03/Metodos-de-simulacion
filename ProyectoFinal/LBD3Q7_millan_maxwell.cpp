@@ -10,7 +10,7 @@
 #include <sys/types.h>  // Para el tipo de datos mode_t
 
 
-const double deltax=0.1;//metro por celda
+const double deltax=0.2;//metro por celda
 const double Lx_real=19.7;
 const double Ly_real=26.5;
 const double Lz_real=8;
@@ -292,7 +292,7 @@ int main(void){
 
                 // Crear el archivo y guardar los datos
                 char filename[50];
-                sprintf(filename, "D3/%d/Ondas_%d.txt", z, int(1000*t*deltaT));
+                sprintf(filename, "D3_maxwell/%d/Ondas_%d.txt", z, int(1000*t*deltaT));
                 Ondas.Print(filename, z);
             }
         }
