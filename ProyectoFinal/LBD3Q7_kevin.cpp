@@ -7,8 +7,8 @@
 #include <omp.h>
 #include "Random64.h"
 
-const int Lx=120;
-const int Ly=120;
+const int Lx=100;
+const int Ly=100;
 const int Lz=120;
 
 
