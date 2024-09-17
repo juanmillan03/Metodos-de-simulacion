@@ -6,9 +6,9 @@ import os
 import re
 
 # Lista de directorios donde están los archivos
-directories = ["D3_maxwell/80/", "D3_maxwell/160/", "D3_maxwell/240/"]
+directories = ["D3/8/", "D3/16/", "D3/12/"]
 # Directorio donde se guardarán los GIFs
-gif_directory = "D3_maxwell/"
+gif_directory = "D3/"
 
 # Función para extraer el número de tiempo del nombre del archivo
 def extract_time_from_filename(filename):
@@ -22,7 +22,7 @@ for directory in directories:
     print(f"Procesando directorio: {directory}")
 
     # Lista de archivos .txt en el directorio actual ordenados por número de tiempo
-    file_list = sorted(glob.glob(directory + "Ondas_t*.txt"), key=extract_time_from_filename)
+    file_list = sorted(glob.glob(directory + "Ondas_*.txt"), key=extract_time_from_filename)
 
     # Verificar que se encontraron archivos
     if not file_list:
@@ -35,7 +35,7 @@ for directory in directories:
     # Definir límites de los ejes (ajusta según tus datos)
     x_min, x_max = 0, 10  # Rango para el eje x
     y_min, y_max = 0, 10  # Rango para el eje y
-    presion_min, presion_max = -1, 1  # Rango para la presión (eje de color)
+    presion_min, presion_max = -1,1  # Rango para la presión (eje de color
 
     # Loop sobre cada archivo y generar un gráfico
     for filename in file_list:
@@ -56,9 +56,10 @@ for directory in directories:
             # Crear la figura
             plt.figure(figsize=(10, 6))
             scatter = plt.scatter(x, y, c=presion, cmap='magma', vmin=presion_min, vmax=presion_max)
+            #scatter = plt.scatter(x, y, c=presion, cmap='magma')
             plt.colorbar(scatter, label='Presión')
-            plt.xlabel('x')
-            plt.ylabel('y')
+            plt.xlabel('x(m)')
+            plt.ylabel('y(m)')
             plt.title(f'Evolución del sistema - {os.path.basename(filename)}')
             plt.grid(True)
             

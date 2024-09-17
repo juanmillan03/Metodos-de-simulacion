@@ -6,7 +6,7 @@ import os
 import re
 
 # Lista de directorios donde están los archivos
-directories = ["D3/30/", "D3/60/", "D3/90/"]
+directories = ["D3/8/", "D3/16/", "D3/12/"]
 # Directorio donde se guardarán los GIFs
 gif_directory = "D3/"
 
@@ -22,7 +22,7 @@ for directory in directories:
     print(f"Procesando directorio: {directory}")
 
     # Lista de archivos .txt en el directorio actual ordenados por número de tiempo
-    file_list = sorted(glob.glob(directory + "Ondas_t*.txt"), key=extract_time_from_filename)
+    file_list = sorted(glob.glob(directory + "Ondas_*.txt"), key=extract_time_from_filename)
 
     # Verificar que se encontraron archivos
     if not file_list:
