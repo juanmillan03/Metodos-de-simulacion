@@ -10,9 +10,9 @@
 #include <sys/types.h>  // Para el tipo de datos mode_t
 
 
-const double deltax=0.1;//metro por celda
-const double Lx_real=19.7;
-const double Ly_real=26.5;
+const double deltax=1;//metro por celda
+const double Lx_real=100;
+const double Ly_real=100;
 const double Lz_real=8;
 const int Lx=Lx_real/deltax+2;
 const int Ly=Ly_real/deltax+2;
@@ -154,7 +154,17 @@ void LatticeBoltzman::Colision(void){
             
             }
 }
-void LatticeBoltzman::ImponerCampos(int t){}
+void LatticeBoltzman::ImponerCampos(int t){
+    int i, ix, iy, iz, n0;
+    double lambda, omega, rho0, Jx0, Jy0, Jz0; lambda=50; omega=2*M_PI/lambda*C;
+    //Una fuente oscilante en el medio
+    ix=Lx/2; iy=Ly/2; iz=4;
+    rho0=10*sin(omega*t); Jx0=Jx(ix,iy,iz,false); Jy0=Jy(ix,iy,iz,false); Jz0=Jz(ix,iy,iz,false);
+    for(i=0;i<Q;i++){
+        n0=n(ix,iy,iz,i);
+        fnew[n0]=feq(rho0,Jx0,Jy0,Jz0,i);
+    }
+}
 void LatticeBoltzman::Adveccion(void){
     int ix, iy, iz, i, ixnext, iynext, iznext, n0, n0next;
     for(ix=0;ix<Lx;ix++)      //Para cada celda
@@ -230,7 +240,7 @@ int main(void){
 
 
     // Establecer el número de hilos de forma explícita
-    int num_threads = 4;
+    int num_threads = 2;
     omp_set_num_threads(num_threads);
     LatticeBoltzman Ondas;
     int t;
@@ -256,7 +266,7 @@ int main(void){
     auto start = std::chrono::high_resolution_clock::now(); // Start timer
     // Fuentes
     Crandom ran64(23);
-    const int Numero_fuentes=5;
+    const int Numero_fuentes=0;
     Fuentes* fuentes[Numero_fuentes];
     int random_number_x;
     int random_number_y;
@@ -266,7 +276,7 @@ int main(void){
         random_number_x= ran64.intRange(Lx/4,Lx*3/4);
         random_number_y= ran64.intRange(Lx/4,Ly*3/4);
         txt_number=ran64.intRange(1,5);
-        fuentes[r] = new Fuentes("Fuentes/fuente_" + std::to_string(txt_number) + ".txt", Ondas, Lx/2, Ly/2, Lz/2,tmax); 
+        fuentes[r] = new Fuentes("Fuentes/fuente_" + std::to_string(txt_number) + ".txt", Ondas, random_number_x, random_number_y, 4,tmax); 
     }
     
     for(t=0; t<int(tmax/deltaT); t++){
@@ -278,19 +288,16 @@ int main(void){
         Ondas.Adveccion();
         if(t % int(0.4/deltaT) == 0){
             std::cout << "Imprimendo: " << t << " click "<<(double)t*deltaT<<" segundos"<< std::endl;
-            #pragma omp parallel
-            for(int z=Lz/4; z<Lz; z=z+Lz/4){
-                // Crear la carpeta D3/z si no existe
-                char directory[30];
-                sprintf(directory, "D3/%d", z);
+            // Crear la carpeta D3/z si no existe
+            char directory[30];
+            sprintf(directory, "D3/%d", int(4/deltax));
 
-                // Crear el archivo y guardar los datos
-                char filename[50];
-                sprintf(filename, "D3/%d/Ondas_%d.txt", z, int(1000*t*deltaT));
-                Ondas.Print(filename, z);
-            }
+            // Crear el archivo y guardar los datos
+            char filename[50];
+            sprintf(filename, "D3/%d/Ondas_%d.txt", int(4/deltax), int(1000*t*deltaT));
+            Ondas.Print(filename, int(4/deltax));
         }
-        std::clog << t*deltaT << "     " << Ondas.rho(Lz/2, Ly/2, Lz/2, true) << std::endl;
+        std::clog << t*deltaT << "     " << Ondas.rho(Lz/2, Ly/2, Lz/2, true) << std::endl; //Lugar de medicion
     }
 
 

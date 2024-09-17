@@ -6,7 +6,7 @@ import os
 import re
 
 # Lista de directorios donde están los archivos
-directories = ["D3/8/", "D3/16/", "D3/12/"]
+directories = ["D3/4/"]
 # Directorio donde se guardarán los GIFs
 gif_directory = "D3/"
 
@@ -88,7 +88,7 @@ for directory in directories:
     try:
         # Definir el nombre del GIF basado en el nombre del directorio
         gif_filename = f"{gif_directory}evolucion_sistema_{os.path.basename(directory.rstrip('/'))}.gif"
-        imageio.mimsave(gif_filename, images, duration=1, loop=0)
+        imageio.mimsave(gif_filename, images, duration=4, loop=0)
         print(f"GIF creado exitosamente como '{gif_filename}'")
     except Exception as e:
         print(f"Error al crear el GIF para el directorio {directory}: {e}")
