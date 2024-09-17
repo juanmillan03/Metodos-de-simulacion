@@ -13,6 +13,7 @@ clean:
 	rm -f LBD3Q7tests *.dat
 	rm -f D2/*.txt
 	rm -f D3/*/*.txt
+	rm -f D3_maxwell/*/*.txt
 	rm -f D3/*/*.png
 D2Q5:
 	g++ -O3 LBOndas.cpp
@@ -26,5 +27,5 @@ LBD3Q7_M:
 	python3 D3/gif.py
 LBD3Q7_maxwell: 
 	g++ -O3 -fopenmp  LBD3Q7_millan_maxwell.cpp -o LBMM
-	OMP_NUM_THREADS=16 ./LBMM
+	OMP_NUM_THREADS=32 ./LBMM
 	python3 D3_maxwell/gif.py

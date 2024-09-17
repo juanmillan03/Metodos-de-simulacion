@@ -6,10 +6,18 @@
 #include <chrono>
 #include <omp.h>
 #include "Random64.h"
+#include <sys/stat.h>   // Para la función mkdir
+#include <sys/types.h>  // Para el tipo de datos mode_t
 
-const int Lx=120;
-const int Ly=120;
-const int Lz=120;
+
+const double deltax=0.1;//metro por celda
+const double Lx_real=19.7;
+const double Ly_real=26.5;
+const double Lz_real=8;
+const int Lx=Lx_real/deltax+2;
+const int Ly=Ly_real/deltax+2;
+const int Lz=Lz_real/deltax+2;
+const double deltaT=0.50000*deltax/300.0;//segundo por click 
 
 
 
@@ -116,53 +124,34 @@ void LatticeBoltzman::Inicie(double rho0, double Jx0, double Jy0, double Jz0){
 }
 void LatticeBoltzman::Colision(void){
     int ix, iy, iz, i, n0, n1, n2, n3, n4, n5, n6; double rho0, Jx0, Jy0, Jz0;
-    #pragma omp parallel for collapse(4) private(ix, iy, iz, i, n0, n1, n2, n3, n4, n5, n6, rho0, Jx0, Jy0, Jz0) 
+    #pragma omp parallel for collapse(3) private(ix, iy, iz, i, n0, n1, n2, n3, n4, n5, n6, rho0, Jx0, Jy0, Jz0) 
     for(ix=0;ix<Lx;ix++)      //Para cada celda
         for(iy=0;iy<Ly;iy++)
             for(iz=0;iz<Lz;iz++){
                 rho0=rho(ix,iy,iz,false); Jx0=Jx(ix,iy,iz,false); Jy0=Jy(ix,iy,iz,false); Jz0=Jz(ix,iy,iz,false); 
-                for(i=0;i<Q;i++){ //En cada direccion
-                        //Bounce-Back
-                    if (ix==Lx-2 || ix==1 || iy==Ly-2 || iy==1 || iz==Lz-2 || iz==1){
-                        n0 = n(ix, iy, iz, 0);
-                        n1 = n(ix, iy, iz, 1);
-                        n3 = n(ix, iy, iz, 3);
-                        n2 = n(ix, iy, iz, 2);
-                        n4 = n(ix, iy, iz, 4);
-                        n5 = n(ix, iy, iz, 5);
-                        n6 = n(ix, iy, iz, 6);
-
-                        fnew[n0] = D*f[n0];
-                        fnew[n1] = D*f[n2];
-                        fnew[n2] = D*f[n1];
-                        fnew[n3] = D*f[n4];
-                        fnew[n4] = D*f[n3];
-                        fnew[n5] = D*f[n6];
-                        fnew[n6] = D*f[n5];
-                    }
-                    if (ix==Lx-1 || ix==0 || iy==Ly-1 || iy==0 || iz==Lz-1 || iz==0){
-                        n0 = n(ix, iy, iz, 0);
-                        n1 = n(ix, iy, iz, 1);
-                        n3 = n(ix, iy, iz, 3);
-                        n2 = n(ix, iy, iz, 2);
-                        n4 = n(ix, iy, iz, 4);
-                        n5 = n(ix, iy, iz, 5);
-                        n6 = n(ix, iy, iz, 6);
-                        fnew[n0] = 0;
-                        fnew[n1] = 0;
-                        fnew[n2] = 0;
-                        fnew[n3] = 0;
-                        fnew[n4] = 0;
-                        fnew[n5] = 0;
-                        fnew[n6] = 0;
-                    }
-                    else{
-                        for(i=0;i<Q;i++){ //En cada direccion
+                if (ix==Lx-2 || ix==1 || iy==Ly-2 || iy==1 || iz==Lz-2 || iz==1){
+                    n0 = n(ix, iy, iz, 0);n1 = n(ix, iy, iz, 1);n3 = n(ix, iy, iz, 3);
+                    n2 = n(ix, iy, iz, 2);n4 = n(ix, iy, iz, 4);
+                    n5 = n(ix, iy, iz, 5);n6 = n(ix, iy, iz, 6);
+                    fnew[n0] = D*f[n0];fnew[n1] = D*f[n2];fnew[n2] = D*f[n1];
+                    fnew[n3] = D*f[n4];fnew[n4] = D*f[n3];
+                    fnew[n5] = D*f[n6];fnew[n6] = D*f[n5];
+                }
+                else if (ix==Lx-1 || ix==0 || iy==Ly-1 || iy==0 || iz==Lz-1 || iz==0){
+                    n0 = n(ix, iy, iz, 0);n1 = n(ix, iy, iz, 1);n3 = n(ix, iy, iz, 3);
+                    n2 = n(ix, iy, iz, 2);n4 = n(ix, iy, iz, 4);n5 = n(ix, iy, iz, 5);
+                    n6 = n(ix, iy, iz, 6);
+                    fnew[n0] = 0;fnew[n1] = 0;fnew[n2] = 0;
+                    fnew[n3] = 0;fnew[n4] = 0;
+                    fnew[n5] = 0;fnew[n6] = 0;
+                }
+                else{
+                    for(i=0;i<Q;i++){ //En cada direccion
                         n0=n(ix,iy,iz,i);
                         fnew[n0]=UmUtau*f[n0]+Utau*feq(rho0,Jx0,Jy0,Jz0,i);
-                        }
                     }
                 }
+            
             }
 }
 void LatticeBoltzman::ImponerCampos(int t){}
@@ -183,7 +172,7 @@ void LatticeBoltzman::Print(const char * NameFile,int z){
     for(ix=0;ix<Lx;ix++){
         for(iy=0;iy<Ly;iy++){
             rho0=rho(ix,iy,iz,true);
-            MyFile<<(float)ix/2<<" "<<(float)iy/2<<" "<<rho0<<std::endl;
+            MyFile<<(float)ix*deltax<<" "<<(float)iy*deltax<<" "<<rho0<<std::endl;
         }
         MyFile<<std::endl;
     }
@@ -198,7 +187,7 @@ private:
     LatticeBoltzman &LB;
 public:
     Fuentes(std::string nombreArchivo, LatticeBoltzman& LBn, int Ix, int Iy, int Iz, int tmax)
-        : archivotxt(nombreArchivo), ix(Ix), iy(Iy), iz(Iz), LB(LBn), sonido(tmax,0) {
+        : archivotxt(nombreArchivo), ix(Ix), iy(Iy), iz(Iz), LB(LBn), sonido(int(tmax/deltaT),0) {
         std::ifstream archivo(nombreArchivo);
         if (!archivo.is_open()) {
             std::cerr << "Error al abrir el archivo: " << nombreArchivo << std::endl;
@@ -238,9 +227,24 @@ void Fuentes::ImponerFuente(int t) {
 //-------------------------------------------------Función principal-------------------------------------------------
 
 int main(void){
+
+
+    // Establecer el número de hilos de forma explícita
+    int num_threads = 4;
+    omp_set_num_threads(num_threads);
     LatticeBoltzman Ondas;
-    int t, tmax=500;
+    int t;
+    double tmax=20.0;//segundos 
     double rho0=0.0, Jx0=0, Jy0=0, Jz0=0;
+
+    // Imprimir la cantidad de celdas en cada eje y los valores de deltax y deltaT
+    std::cout << "Cantidad de celdas en el eje X (Lx): " << Lx << std::endl;
+    std::cout << "Cantidad de celdas en el eje Y (Ly): " << Ly << std::endl;
+    std::cout << "Cantidad de celdas en el eje Z (Lz): " << Lz << std::endl;
+    std::cout << "Valor de deltax: " << deltax << " metros por celda" << std::endl;
+    std::cout << "Valor de deltaT: " << deltaT << " segundos por click" << std::endl;
+    std::cout << "Valor de tiempo total: " << tmax << " segundos "<<tmax/deltaT<<" click"<< std::endl;
+
 
     //INICIE
 
@@ -252,40 +256,53 @@ int main(void){
     auto start = std::chrono::high_resolution_clock::now(); // Start timer
     // Fuentes
     Crandom ran64(23);
-    const int Numero_fuentes=1;
+    const int Numero_fuentes=5;
     Fuentes* fuentes[Numero_fuentes];
     int random_number_x;
     int random_number_y;
     int txt_number;
     
     for(int r=0;r<Numero_fuentes;r++){// Get a random integer between 0 and 120
-        random_number_x= ran64.intRange(20,Lx-20);
-        random_number_y= ran64.intRange(20,Ly-20);
+        random_number_x= ran64.intRange(Lx/4,Lx*3/4);
+        random_number_y= ran64.intRange(Lx/4,Ly*3/4);
         txt_number=ran64.intRange(1,5);
         fuentes[r] = new Fuentes("Fuentes/fuente_" + std::to_string(txt_number) + ".txt", Ondas, Lx/2, Ly/2, Lz/2,tmax); 
     }
     
-    for(t=0;t<tmax;t++){
+    for(t=0; t<int(tmax/deltaT); t++){
         Ondas.Colision();
         Ondas.ImponerCampos(t);
-
-        for(int r=0;r<Numero_fuentes;r++)fuentes[r]->ImponerFuente(t);
+        for(int r=0; r<Numero_fuentes; r++) {
+            fuentes[r]->ImponerFuente(t);
+        }
         Ondas.Adveccion();
-        if(t%10==0){
-            #pragma omp for
-            for(int z=Lz/4;z<Lz;z=z+Lz/4){
-                char filename[30];
-                sprintf(filename, "D3/%d/Ondas_t%d.txt", z,t);
-                Ondas.Print(filename,z);
+        if(t % int(0.4/deltaT) == 0){
+            std::cout << "Imprimendo: " << t << " click "<<(double)t*deltaT<<" segundos"<< std::endl;
+            #pragma omp parallel
+            for(int z=Lz/4; z<Lz; z=z+Lz/4){
+                // Crear la carpeta D3/z si no existe
+                char directory[30];
+                sprintf(directory, "D3/%d", z);
+
+                // Verificar si el directorio existe, si no, crearlo
+                struct stat st = {0};
+                if (stat(directory, &st) == -1) {
+                    mkdir(directory, 0700);  // Crear el directorio con permisos de lectura/escritura
+                }
+
+                // Crear el archivo y guardar los datos
+                char filename[50];
+                sprintf(filename, "D3/%d/Ondas_%d.txt", z, int(1000*t*deltaT));
+                Ondas.Print(filename, z);
             }
         }
-        std::clog<<t<<"     "<<Ondas.rho(Lz/2,Ly/2,Lz/2,true)<<std::endl;
-        
+        std::clog << t*deltaT << "     " << Ondas.rho(Lz/2, Ly/2, Lz/2, true) << std::endl;
     }
 
+
     auto end = std::chrono::high_resolution_clock::now(); // End timer
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start); // Calculate duration in milliseconds
-    std::cout << "Total time for all iterations: " << duration.count()/1000 << " seconds" << std::endl;
+    auto duration = std::chrono::duration_cast<std::chrono::seconds>(end - start); // Calculate duration in milliseconds
+    std::cout << "Total time for all iterations: " << duration.count() << " seconds" << std::endl;
     //Print
     
     return 0;
