@@ -311,7 +311,6 @@ int main(int argc, char **argv){
     LatticeBoltzman Aire(tau);
     int t, tmax=1000;
     double rho0=1.0, Ufan0=0.1; 
-    double R=8;
     std::vector<double> Fuerza(2, 0.0);
 
     //INICIE

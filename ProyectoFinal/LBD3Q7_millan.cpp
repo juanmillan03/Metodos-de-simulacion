@@ -116,52 +116,52 @@ void LatticeBoltzman::Inicie(double rho0, double Jx0, double Jy0, double Jz0){
 }
 void LatticeBoltzman::Colision(void){
     int ix, iy, iz, i, n0, n1, n2, n3, n4, n5, n6; double rho0, Jx0, Jy0, Jz0;
-    #pragma omp parallel for collapse(3) private(ix, iy, iz, i, n0, n1, n2, n3, n4, n5, n6, rho0, Jx0, Jy0, Jz0) 
+    #pragma omp parallel for collapse(4) private(ix, iy, iz, i, n0, n1, n2, n3, n4, n5, n6, rho0, Jx0, Jy0, Jz0) 
     for(ix=0;ix<Lx;ix++)      //Para cada celda
         for(iy=0;iy<Ly;iy++)
             for(iz=0;iz<Lz;iz++){
                 rho0=rho(ix,iy,iz,false); Jx0=Jx(ix,iy,iz,false); Jy0=Jy(ix,iy,iz,false); Jz0=Jz(ix,iy,iz,false); 
                 for(i=0;i<Q;i++){ //En cada direccion
-                    //Bounce-Back
-                if (ix==Lx-2 || ix==1 || iy==Ly-2 || iy==1 || iz==Lz-2 || iz==1){
-                    n0 = n(ix, iy, iz, 0);
-                    n1 = n(ix, iy, iz, 1);
-                    n3 = n(ix, iy, iz, 3);
-                    n2 = n(ix, iy, iz, 2);
-                    n4 = n(ix, iy, iz, 4);
-                    n5 = n(ix, iy, iz, 5);
-                    n6 = n(ix, iy, iz, 6);
+                        //Bounce-Back
+                    if (ix==Lx-2 || ix==1 || iy==Ly-2 || iy==1 || iz==Lz-2 || iz==1){
+                        n0 = n(ix, iy, iz, 0);
+                        n1 = n(ix, iy, iz, 1);
+                        n3 = n(ix, iy, iz, 3);
+                        n2 = n(ix, iy, iz, 2);
+                        n4 = n(ix, iy, iz, 4);
+                        n5 = n(ix, iy, iz, 5);
+                        n6 = n(ix, iy, iz, 6);
 
-                    fnew[n0] = D*f[n0];
-                    fnew[n1] = D*f[n2];
-                    fnew[n2] = D*f[n1];
-                    fnew[n3] = D*f[n4];
-                    fnew[n4] = D*f[n3];
-                    fnew[n5] = D*f[n6];
-                    fnew[n6] = D*f[n5];
-                }
-                if (ix==Lx-1 || ix==0 || iy==Ly-1 || iy==0 || iz==Lz-1 || iz==0){
-                    n0 = n(ix, iy, iz, 0);
-                    n1 = n(ix, iy, iz, 1);
-                    n3 = n(ix, iy, iz, 3);
-                    n2 = n(ix, iy, iz, 2);
-                    n4 = n(ix, iy, iz, 4);
-                    n5 = n(ix, iy, iz, 5);
-                    n6 = n(ix, iy, iz, 6);
-                    fnew[n0] = 0;
-                    fnew[n1] = 0;
-                    fnew[n2] = 0;
-                    fnew[n3] = 0;
-                    fnew[n4] = 0;
-                    fnew[n5] = 0;
-                    fnew[n6] = 0;
-                }
-                else{
-                    for(i=0;i<Q;i++){ //En cada direccion
-                    n0=n(ix,iy,iz,i);
-                    fnew[n0]=UmUtau*f[n0]+Utau*feq(rho0,Jx0,Jy0,Jz0,i);
+                        fnew[n0] = D*f[n0];
+                        fnew[n1] = D*f[n2];
+                        fnew[n2] = D*f[n1];
+                        fnew[n3] = D*f[n4];
+                        fnew[n4] = D*f[n3];
+                        fnew[n5] = D*f[n6];
+                        fnew[n6] = D*f[n5];
                     }
-                }
+                    if (ix==Lx-1 || ix==0 || iy==Ly-1 || iy==0 || iz==Lz-1 || iz==0){
+                        n0 = n(ix, iy, iz, 0);
+                        n1 = n(ix, iy, iz, 1);
+                        n3 = n(ix, iy, iz, 3);
+                        n2 = n(ix, iy, iz, 2);
+                        n4 = n(ix, iy, iz, 4);
+                        n5 = n(ix, iy, iz, 5);
+                        n6 = n(ix, iy, iz, 6);
+                        fnew[n0] = 0;
+                        fnew[n1] = 0;
+                        fnew[n2] = 0;
+                        fnew[n3] = 0;
+                        fnew[n4] = 0;
+                        fnew[n5] = 0;
+                        fnew[n6] = 0;
+                    }
+                    else{
+                        for(i=0;i<Q;i++){ //En cada direccion
+                        n0=n(ix,iy,iz,i);
+                        fnew[n0]=UmUtau*f[n0]+Utau*feq(rho0,Jx0,Jy0,Jz0,i);
+                        }
+                    }
                 }
             }
 }
@@ -183,7 +183,7 @@ void LatticeBoltzman::Print(const char * NameFile,int z){
     for(ix=0;ix<Lx;ix++){
         for(iy=0;iy<Ly;iy++){
             rho0=rho(ix,iy,iz,true);
-            MyFile<<(float)ix/10<<" "<<(float)iy/10<<" "<<rho0*C*C<<std::endl;
+            MyFile<<(float)ix/2<<" "<<(float)iy/2<<" "<<rho0<<std::endl;
         }
         MyFile<<std::endl;
     }
@@ -207,7 +207,7 @@ public:
         double valor;
         int i = 0;
         while (archivo >> valor && i < tmax) {
-            sonido[i] = 2e-5*std::pow(10,valor/20)*std::pow(C,-2);
+            sonido[i] = 20e-6*std::pow(10,valor/20.0);
             i++;
         }
         archivo.close();
@@ -239,8 +239,8 @@ void Fuentes::ImponerFuente(int t) {
 
 int main(void){
     LatticeBoltzman Ondas;
-    int t, tmax=1000;
-    double rho0=0.888, Jx0=0, Jy0=0, Jz0=0;
+    int t, tmax=500;
+    double rho0=0.0, Jx0=0, Jy0=0, Jz0=0;
 
     //INICIE
 
@@ -252,7 +252,7 @@ int main(void){
     auto start = std::chrono::high_resolution_clock::now(); // Start timer
     // Fuentes
     Crandom ran64(23);
-    const int Numero_fuentes=30;
+    const int Numero_fuentes=1;
     Fuentes* fuentes[Numero_fuentes];
     int random_number_x;
     int random_number_y;
@@ -261,13 +261,14 @@ int main(void){
     for(int r=0;r<Numero_fuentes;r++){// Get a random integer between 0 and 120
         random_number_x= ran64.intRange(20,Lx-20);
         random_number_y= ran64.intRange(20,Ly-20);
-        txt_number=ran64.intRange(1,4);
-        fuentes[r] = new Fuentes("Fuentes/fuente_" + std::to_string(txt_number) + ".txt", Ondas, random_number_x, random_number_y, Lz/2,tmax); 
+        txt_number=ran64.intRange(1,5);
+        fuentes[r] = new Fuentes("Fuentes/fuente_" + std::to_string(txt_number) + ".txt", Ondas, Lx/2, Ly/2, Lz/2,tmax); 
     }
     
     for(t=0;t<tmax;t++){
         Ondas.Colision();
         Ondas.ImponerCampos(t);
+
         for(int r=0;r<Numero_fuentes;r++)fuentes[r]->ImponerFuente(t);
         Ondas.Adveccion();
         if(t%10==0){
@@ -278,7 +279,8 @@ int main(void){
                 Ondas.Print(filename,z);
             }
         }
-        std::clog<<t<<"     "<<Ondas.rho(Lz/2,Ly/2,Lz/2,true)*C*C<<std::endl;
+        std::clog<<t<<"     "<<Ondas.rho(Lz/2,Ly/2,Lz/2,true)<<std::endl;
+        
     }
 
     auto end = std::chrono::high_resolution_clock::now(); // End timer
