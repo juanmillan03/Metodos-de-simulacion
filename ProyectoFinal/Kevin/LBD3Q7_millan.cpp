@@ -17,7 +17,7 @@ const double Lz_real=8;
 const int Lx=Lx_real/deltax+2;
 const int Ly=Ly_real/deltax+2;
 const int Lz=Lz_real/deltax+2;
-const double deltaT=0.5*deltax/300.0;//segundo por click 
+const double deltaT=0.50000*deltax/300.0;//segundo por click 
 
 
 
@@ -283,6 +283,12 @@ int main(void){
                 // Crear la carpeta D3/z si no existe
                 char directory[30];
                 sprintf(directory, "D3/%d", z);
+
+                // Verificar si el directorio existe, si no, crearlo
+                struct stat st = {0};
+                if (stat(directory, &st) == -1) {
+                    mkdir(directory, 0700);  // Crear el directorio con permisos de lectura/escritura
+                }
 
                 // Crear el archivo y guardar los datos
                 char filename[50];
