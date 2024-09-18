@@ -10,17 +10,19 @@
 #include <sys/types.h>  // Para el tipo de datos mode_t
 
 
-const double deltax=1;//metro por celda
-const double Lx_real=50;
-const double Ly_real=50;
-const double LzPequeño_real=25;
-const double R_real=Lx_real/4;
-const double Lz_real=LzPequeño_real+R_real+1;
+const double deltax=0.2;//metro por celda
+const double Lx_real=19.7;
+const double Ly_real=26.5;
+const double LzPequeño_real=5;
+const double b_real=3;
+const double a_real=Lx_real/2;
+const double Lz_real=LzPequeño_real+b_real;
 const int LzPequeño=LzPequeño_real/deltax+2;
 const int Lx=Lx_real/deltax+2;
 const int Ly=Ly_real/deltax+2;
-const int Lz=Lz_real/deltax+2;
-const int R=R_real/deltax+2;
+const int Lz=Lz_real/deltax+3;
+const int a=a_real/deltax;
+const int b=b_real/deltax;
 const double deltaT=0.5*deltax/300.0;//segundo por click 
 
 
@@ -37,6 +39,8 @@ const double Utau=1.0/tau;
 const double UmUtau= 1-Utau;
 
 const double D_paredes = 0.987;
+const double D_sillas = 0.987;
+const double D_mesas = 0.987;
 
 
 
@@ -58,15 +62,14 @@ public:
     bool Pared(int ix, int iy, int iz);
     bool Techo(int ix, int iy, int iz);
     bool Silla(int ix, int iy, int iz);
-    void BounceBack(int ix, int iy, int iz, double D);
+    void Rebote(int ix, int iy, int iz, double D);
     double feq(double rho0, double Jx0, double Jy0, double Jz0, int i);
     void Inicie(double rho0, double Jx0, double Jy0, double Jz0);
     void Colision(void);
     void ImponerCampos(int t);
     void Adveccion(void);
     void Print(const char * NameFile,int z);
-    friend class Fuentes;
-    friend class BounceBack; // Declarar a la clase Fuentes como amiga
+    friend class Fuentes; // Declarar a la clase Fuentes como amiga
 };
 LatticeBoltzman::LatticeBoltzman(void){
     //Cargar los pesos
@@ -125,10 +128,9 @@ bool LatticeBoltzman::Pared(int ix, int iy, int iz){
 }
 
 bool LatticeBoltzman::Techo(int ix, int iy, int iz){
-    int R2=R*R;
     int ixc=Lx/2, izc=LzPequeño;
 
-    if((ix-ixc)*(ix-ixc)+(iz-izc)*(iz-izc)>=R2 && iz>=LzPequeño){
+    if((ix-ixc)*(ix-ixc)*b*b+(iz-izc)*(iz-izc)*a*a>=a*a*b*b && iz>=LzPequeño){
         return true;
     }
     else{
@@ -146,7 +148,9 @@ bool LatticeBoltzman::Silla(int ix, int iy, int iz){
     }
 }
 
-void LatticeBoltzman::BounceBack(int ix, int iy, int iz, double D){
+
+
+void LatticeBoltzman::Rebote(int ix, int iy, int iz, double D){
     int n0, n1, n2, n3, n4, n5, n6;
 
     n0 = n(ix, iy, iz, 0);n1 = n(ix, iy, iz, 1);n3 = n(ix, iy, iz, 3);
@@ -182,7 +186,7 @@ void LatticeBoltzman::Colision(void){
             for(iz=0;iz<Lz;iz++){
                 rho0=rho(ix,iy,iz,false); Jx0=Jx(ix,iy,iz,false); Jy0=Jy(ix,iy,iz,false); Jz0=Jz(ix,iy,iz,false); 
                 if (Pared(ix,iy,iz) || Techo(ix,iy,iz)){
-                    BounceBack(ix,iy,iz,D_paredes);
+                    Rebote(ix,iy,iz,D_paredes);
                 }
                 else if (ix==Lx-1 || ix==0 || iy==Ly-1 || iy==0 || iz==Lz-1 || iz==0){
                     n0 = n(ix, iy, iz, 0);n1 = n(ix, iy, iz, 1);n3 = n(ix, iy, iz, 3);
@@ -203,7 +207,7 @@ void LatticeBoltzman::Colision(void){
 }
 void LatticeBoltzman::ImponerCampos(int t){
     int i, ix, iy, iz, n0;
-    double lambda, omega, rho0, Jx0, Jy0, Jz0; lambda=50; omega=2*M_PI/lambda*C;
+    double lambda, omega, rho0, Jx0, Jy0, Jz0; lambda=7; omega=2*M_PI/lambda*C;
     //Una fuente oscilante en el medio
     ix=Lx/2; iy=Ly/2; iz=4;
     rho0=10*sin(omega*t); Jx0=Jx(ix,iy,iz,false); Jy0=Jy(ix,iy,iz,false); Jz0=Jz(ix,iy,iz,false);
@@ -337,11 +341,11 @@ int main(void){
             std::cout << "Imprimendo: " << t << " click "<<(double)t*deltaT<<" segundos"<< std::endl;
             // Crear la carpeta D3/z si no existe
             char directory[30];
-            sprintf(directory, "D3/%d", int(4/deltax));
+            sprintf(directory, "D3/%d", int(4));
 
             // Crear el archivo y guardar los datos
             char filename[50];
-            sprintf(filename, "D3/%d/Ondas_%d.txt", int(4/deltax), int(1000*t*deltaT));
+            sprintf(filename, "D3/%d/Ondas_%d.txt", int(4), int(1000*t*deltaT));
             Ondas.Print(filename, int(4/deltax));
         }
         std::clog << t*deltaT << "     " << Ondas.rho(Lz/2, Ly/2, Lz/2, true) << std::endl; //Lugar de medicion

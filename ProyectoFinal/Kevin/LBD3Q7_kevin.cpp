@@ -57,15 +57,14 @@ public:
     double Jz(int ix, int iy, int iz, bool UseNew);
     bool Pared(int ix, int iy, int iz);
     bool Techo(int ix, int iy, int iz);
-    void BounceBack(int ix, int iy, int iz, double D);
+    void Rebote(int ix, int iy, int iz, double D);
     double feq(double rho0, double Jx0, double Jy0, double Jz0, int i);
     void Inicie(double rho0, double Jx0, double Jy0, double Jz0);
     void Colision(void);
     void ImponerCampos(int t);
     void Adveccion(void);
     void Print(const char * NameFile,int z);
-    friend class Fuentes;
-    friend class BounceBack; // Declarar a la clase Fuentes como amiga
+    friend class Fuentes; // Declarar a la clase Fuentes como amiga
 };
 LatticeBoltzman::LatticeBoltzman(void){
     //Cargar los pesos
@@ -135,7 +134,7 @@ bool LatticeBoltzman::Techo(int ix, int iy, int iz){
     }
 }
 
-void LatticeBoltzman::BounceBack(int ix, int iy, int iz, double D){
+void LatticeBoltzman::Rebote(int ix, int iy, int iz, double D){
     int n0, n1, n2, n3, n4, n5, n6;
 
     n0 = n(ix, iy, iz, 0);n1 = n(ix, iy, iz, 1);n3 = n(ix, iy, iz, 3);
@@ -171,7 +170,7 @@ void LatticeBoltzman::Colision(void){
             for(iz=0;iz<Lz;iz++){
                 rho0=rho(ix,iy,iz,false); Jx0=Jx(ix,iy,iz,false); Jy0=Jy(ix,iy,iz,false); Jz0=Jz(ix,iy,iz,false); 
                 if (Pared(ix,iy,iz) || Techo(ix,iy,iz)){
-                    BounceBack(ix,iy,iz,D_paredes);
+                    Rebote(ix,iy,iz,D_paredes);
                 }
                 else if (ix==Lx-1 || ix==0 || iy==Ly-1 || iy==0 || iz==Lz-1 || iz==0){
                     n0 = n(ix, iy, iz, 0);n1 = n(ix, iy, iz, 1);n3 = n(ix, iy, iz, 3);
