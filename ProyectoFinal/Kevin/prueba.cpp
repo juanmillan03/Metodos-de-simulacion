@@ -10,7 +10,7 @@
 #include <sys/types.h>  // Para el tipo de datos mode_t
 
 
-const double deltax=0.4;//metro por celda
+const double deltax=0.1;//metro por celda
 //--------------------Dimensiones reales del recinto-----------
 const double Lx_real=19.7;
 const double Ly_real=26.5;
@@ -506,12 +506,12 @@ int main(void){
             std::cout << "Imprimendo: " << t << " click "<<(double)t*deltaT<<" segundos"<< std::endl;
             // Crear la carpeta D3/z si no existe
             char directory[30];
-            sprintf(directory, "D3/%d", int(3));
+            sprintf(directory, "D3/%d", int(4));
 
             // Crear el archivo y guardar los datos
             char filename[50];
-            sprintf(filename, "D3/%d/Ondas_%d.txt", int(3), int(1000*t*deltaT));
-            Ondas.Print(filename, int(3/deltax),plano);
+            sprintf(filename, "D3/%d/Ondas_%d.txt", int(4), int(1000*t*deltaT));
+            Ondas.Print(filename, int(h_silla_real/deltax),plano);
         }
         std::clog << t*deltaT << "     " << Ondas.rho(Lz/2, Ly/2, Lz/2, true) << std::endl; //Lugar de medicion
     }
