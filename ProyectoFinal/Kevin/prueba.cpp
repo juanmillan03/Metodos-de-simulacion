@@ -41,6 +41,7 @@ const double deltax_mesa_real=2*deltax_silla_real;
 const double deltay_mesa_real=2*deltax_silla_real;
 const double h_sentado_real=1.3;
 const double h_parado_real=1.7;
+const double L_persona_real=0.5;
 //--------------------Dimensiones simulacion del resto de elementos-----------
 const int h_silla=h_silla_real/deltax+2;
 const int L_silla=L_silla_real/deltax;
@@ -56,6 +57,7 @@ const int deltax_mesa=deltax_mesa_real/deltax;
 const int deltay_mesa=deltay_mesa_real/deltax;
 const int h_sentado=h_sentado_real/deltax+2;
 const int h_parado=h_parado_real/deltax+2;
+const int L_persona=L_persona_real/deltax;
 
 
 
@@ -70,8 +72,13 @@ const double tau=0.5;
 const double Utau=1.0/tau;
 const double UmUtau= 1-Utau;
 
-const double D_paredes = 0.987;
-const double D_acero = 0.96;
+//--------------------------Coeficientes de absorcion-------------------------
+const double D_parado = 0.75;
+const double D_sentado = 0.426;
+const double D_acero = 0.894;
+const double D_paredes = 0.84;
+const double D_piso = 0.984;
+const double D_techo = 0.948;
 
 
 
@@ -91,14 +98,17 @@ public:
     double Jy(int ix, int iy, int iz, bool UseNew);
     double Jz(int ix, int iy, int iz, bool UseNew);
     bool Pared(int ix, int iy, int iz);
+    bool Piso(int ix, int iy, int iz);
     bool Techo(int ix, int iy, int iz);
     bool Silla(int ix, int iy, int iz);
     bool Mesa(int ix, int iy, int iz);
+    bool Paradas(int ix, int iy, int iz, const std::vector<std::pair<int, int>>& posiciones);
+    bool Sentadas(int ix, int iy, int iz);
     void Rebote(int ix, int iy, int iz, double D);
     void Frontera(int ix, int iy, int iz);
     double feq(double rho0, double Jx0, double Jy0, double Jz0, int i);
     void Inicie(double rho0, double Jx0, double Jy0, double Jz0);
-    void Colision(void);
+    void Colision(const std::vector<std::pair<int, int>>& posiciones);
     void ImponerCampos(int t);
     void Adveccion(void);
     void Print(const char * NameFile,int z, bool UseNew);
@@ -152,7 +162,16 @@ double LatticeBoltzman::Jz(int ix, int iy, int iz, bool UseNew){
 }
 
 bool LatticeBoltzman::Pared(int ix, int iy, int iz){
-    if (ix==Lx-2 || ix==1 || iy==Ly-2 || iy==1 || iz==Lz-2 || iz==1){
+    if (ix==Lx-2 || ix==1 || iy==Ly-2 || iy==1 || iz==Lz-2){
+        return true;
+    }
+    else{
+        return false;
+    }
+}
+
+bool LatticeBoltzman::Piso(int ix, int iy, int iz){
+    if (iz==1){
         return true;
     }
     else{
@@ -174,15 +193,15 @@ bool LatticeBoltzman::Techo(int ix, int iy, int iz){
 bool LatticeBoltzman::Silla(int ix, int iy, int iz){
 //Para que se vean a baja resolucion usar r2=Lx/4, h_silla=Lz/2, deltax_silla=10, deltay_silla=20
 
-    double r2 = Lx/4/*(L_silla / 2) * (L_silla / 2)*/;
+    double r2 = (L_silla / 2) * (L_silla / 2);
 
     // Verificamos si está en el rango correcto para iz
-    if (iz > 1 && iz <= Ly/2/*h_silla*/) {
+    if (iz > 1 && iz <= h_silla) {
         // Recorremos los desplazamientos en x e y para evaluar las posiciones
-        for (int dx = 0; dx <= 4; ++dx) {
-            for (int dy = 0; dy <= 2; ++dy) {
-                double x_shift = x_sillaI + dx * 10/*deltax_silla*/;
-                double y_shift = y_sillaI + dy * 20/*deltay_silla*/;
+        for (int dx = 0; dx <= 10; ++dx) {
+            for (int dy = 0; dy <= 5; ++dy) {
+                double x_shift = x_sillaI + dx * deltax_silla;
+                double y_shift = y_sillaI + dy * deltay_silla;
 
                 // Comprobamos si la posición (ix, iy) está dentro del radio r2
                 if ((ix - x_shift) * (ix - x_shift) + (iy - y_shift) * (iy - y_shift) <= r2) {
@@ -198,15 +217,57 @@ bool LatticeBoltzman::Silla(int ix, int iy, int iz){
 bool LatticeBoltzman::Mesa(int ix, int iy, int iz){
 //Para que se vean a baja resolucion usar r2=Lx/3, h_silla=Lz/2, deltax_silla=deltay_silla=20
 
-    double r2 = Lx/3/*(L_mesa / 2) * (L_mesa / 2)*/;
+    double r2 = (L_mesa / 2) * (L_mesa / 2);
 
     // Verificamos si está en el rango correcto para iz
-    if (iz > 1 && iz <= Ly/2/*h_mesa*/) {
+    if (iz > 1 && iz <= h_mesa) {
         // Recorremos los desplazamientos en x e y para evaluar las posiciones
-        for (int dx = 0; dx <= 2; ++dx) {
-            for (int dy = 0; dy <= 2; ++dy) {
-                double x_shift = 15/*x_mesaI*/ + dx * 20/*deltax_mesa*/;
-                double y_shift = y_mesaI + dy * 20/*deltay_mesa*/;
+        for (int dx = 0; dx <= 5; ++dx) {
+            for (int dy = 0; dy <= 5; ++dy) {
+                double x_shift = x_mesaI + dx * deltax_mesa;
+                double y_shift = y_mesaI + dy * deltay_mesa;
+
+                // Comprobamos si la posición (ix, iy) está dentro del radio r2
+                if ((ix - x_shift) * (ix - x_shift) + (iy - y_shift) * (iy - y_shift) <= r2) {
+                    return true; 
+                }
+            }
+        }
+    }
+
+    return false; 
+}
+
+bool LatticeBoltzman::Paradas(int ix, int iy, int iz, const std::vector<std::pair<int, int>>& posiciones) {
+    double r2 = (L_persona / 2) * (L_persona / 2);
+
+    // Verificamos si está en el rango correcto para iz
+    if (iz > 1 && iz <= h_parado) {
+        // Iteramos sobre todas las posiciones (ixc, iyc)
+        for (const auto& posicion : posiciones) {
+            int ixc = posicion.first;
+            int iyc = posicion.second;
+            // Comprobamos si la posición (ix, iy) está dentro del radio r2
+            if ((ix - ixc) * (ix - ixc) + (iy - iyc) * (iy - iyc) <= r2) {
+                return true; 
+            }    
+        }
+    }
+    return false; 
+}
+
+bool LatticeBoltzman::Sentadas(int ix, int iy, int iz){
+//Para que se vean a baja resolucion usar r2=Lx/4, h_silla=Lz/2, deltax_silla=10, deltay_silla=20
+
+    double r2 = (L_persona / 2) * (L_persona / 2) ;
+
+    // Verificamos si está en el rango correcto para iz
+    if (iz > h_silla && iz <= h_sentado) {
+        // Recorremos los desplazamientos en x e y para evaluar las posiciones
+        for (int dx = 0; dx <= 10; ++dx) {
+            for (int dy = 0; dy <= 5; ++dy) {
+                double x_shift = x_sillaI + dx * deltax_silla;
+                double y_shift = y_sillaI + dy * deltay_silla;
 
                 // Comprobamos si la posición (ix, iy) está dentro del radio r2
                 if ((ix - x_shift) * (ix - x_shift) + (iy - y_shift) * (iy - y_shift) <= r2) {
@@ -260,19 +321,20 @@ void LatticeBoltzman::Inicie(double rho0, double Jx0, double Jy0, double Jz0){
                     f[n0]=feq(rho0,Jx0,Jy0,Jz0,i);
                 }  
 }
-void LatticeBoltzman::Colision(void){
+void LatticeBoltzman::Colision(const std::vector<std::pair<int, int>>& posiciones){
     int ix, iy, iz, i, n0, n1, n2, n3, n4, n5, n6; double rho0, Jx0, Jy0, Jz0;
     #pragma omp parallel for collapse(3) private(ix, iy, iz, i, n0, n1, n2, n3, n4, n5, n6, rho0, Jx0, Jy0, Jz0) 
     for(ix=0;ix<Lx;ix++)      //Para cada celda
         for(iy=0;iy<Ly;iy++)
             for(iz=0;iz<Lz;iz++){
                 rho0=rho(ix,iy,iz,false); Jx0=Jx(ix,iy,iz,false); Jy0=Jy(ix,iy,iz,false); Jz0=Jz(ix,iy,iz,false); 
-                if (Pared(ix,iy,iz) || Techo(ix,iy,iz)){
-                    Rebote(ix,iy,iz,D_paredes);
-                }
-                else if(Silla(ix,iy,iz) || Mesa(ix,iy,iz)){
-                    Rebote(ix,iy,iz,D_acero);
-                }
+                if (Pared(ix,iy,iz)){Rebote(ix,iy,iz,D_paredes);}
+                else if (Piso(ix,iy,iz)){Rebote(ix,iy,iz,D_piso);}
+                else if (Techo(ix,iy,iz)){Rebote(ix,iy,iz,D_techo);}
+                else if (Silla(ix,iy,iz) || Mesa(ix,iy,iz)){Rebote(ix,iy,iz,D_acero);}
+                else if (Paradas(ix, iy, iz, posiciones)){Rebote(ix,iy,iz,D_parado);}
+                else if (Sentadas(ix, iy, iz)){Rebote(ix,iy,iz,D_sentado);}
+
                 else if (ix==Lx-1 || ix==0 || iy==Ly-1 || iy==0 || iz==Lz-1 || iz==0){
                     Frontera(ix,iy,iz);
                 }
@@ -343,26 +405,32 @@ private:
     LatticeBoltzman &LB;
 public:
     Fuentes(std::string nombreArchivo, LatticeBoltzman& LBn, int Ix, int Iy, int Iz, int tmax)
-        : archivotxt(nombreArchivo), ix(Ix), iy(Iy), iz(Iz), LB(LBn), sonido(int(tmax/deltaT),0) {
-        std::ifstream archivo(nombreArchivo);
-        if (!archivo.is_open()) {
-            std::cerr << "Error al abrir el archivo: " << nombreArchivo << std::endl;
-            return;
-        }
-        double valor;
-        int i = 0;
-        while (archivo >> valor && i < tmax) {
-            sonido[i] = 20e-6*std::pow(10,valor/20.0);
-            i++;
-        }
-        archivo.close();
-        // std::cout << "Archivo " << nombreArchivo << " leído con éxito. Valores almacenados en el vector 'sonido'." << std::endl;
-        // std::cout << "Contenido del vector 'sonido':" << std::endl;
-        // for (int i = 0; i < tmax; i++) {
-        //     std::cout << "sonido[" << i << "] = " << sonido[i] << std::endl;
-        // }
-
+    : archivotxt(nombreArchivo), ix(Ix), iy(Iy), iz(Iz), LB(LBn), sonido(int(tmax/deltaT), 0) {
+    
+    std::ifstream archivo(nombreArchivo);
+    if (!archivo.is_open()) {
+        std::cerr << "Error al abrir el archivo: " << nombreArchivo << std::endl;
+        return;
     }
+
+    double valor;
+    int i = 0;  // Contador del archivo (índice de los datos del archivo)
+    int steps_per_data = int(0.1/ deltaT);  // Cuántos pasos de deltaT corresponden a cada 0.2 segundos
+
+    while (archivo >> valor && i < int(tmax / 0.1)) {  // Leer los datos del archivo (suponiendo que los datos están cada 0.2 segundos)
+        double amplitude = 20e-6*std::pow(10, valor / 20.0);  // Convertir a presión acústica
+
+        // Rellenar el array 'sonido' con el valor leído por 'steps_per_data' pasos de deltaT
+        for (int j = 0; j < steps_per_data && (i * steps_per_data + j) < int(tmax / deltaT); j++) {
+            sonido[i * steps_per_data + j] = amplitude;
+        }
+
+        i++;  // Pasar al siguiente dato del archivo (cada 0.2 segundos)
+    }
+
+    archivo.close();
+}
+
     void ImponerFuente(int t);
     friend class LatticeBoltzman;
 };
@@ -383,7 +451,6 @@ void Fuentes::ImponerFuente(int t) {
 //-------------------------------------------------Función principal-------------------------------------------------
 
 int main(void){
-
 
     // Establecer el número de hilos de forma explícita
     int num_threads = 2;
@@ -408,7 +475,7 @@ int main(void){
     Ondas.Inicie(rho0,Jx0,Jy0,Jz0);
     
     //Corre
-    // ...
+    std::vector<std::pair<int, int>> posiciones = {{10, 20}, {15, 25}, {30, 35}};
 
     auto start = std::chrono::high_resolution_clock::now(); // Start timer
     // Fuentes
@@ -417,17 +484,19 @@ int main(void){
     Fuentes* fuentes[Numero_fuentes];
     int random_number_x;
     int random_number_y;
+    int random_number_z;
     int txt_number;
     
     for(int r=0;r<Numero_fuentes;r++){// Get a random integer between 0 and 120
         random_number_x= ran64.intRange(Lx/4,Lx*3/4);
         random_number_y= ran64.intRange(Lx/4,Ly*3/4);
+        random_number_z= ran64.intRange(Lx/4,Ly*3/4);
         txt_number=ran64.intRange(1,5);
-        fuentes[r] = new Fuentes("Fuentes/fuente_" + std::to_string(txt_number) + ".txt", Ondas, random_number_x, random_number_y, 4,tmax); 
+        fuentes[r] = new Fuentes("Fuentes/fuente_" + std::to_string(txt_number) + ".txt", Ondas, random_number_x, random_number_y, random_number_z,tmax); 
     }
     
     for(t=0; t<int(tmax/deltaT); t++){
-        Ondas.Colision();
+        Ondas.Colision(posiciones);
         Ondas.ImponerCampos(t);
         for(int r=0; r<Numero_fuentes; r++) {
             fuentes[r]->ImponerFuente(t);
