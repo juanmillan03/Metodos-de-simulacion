@@ -6,7 +6,7 @@ import os
 import re
 
 # Lista de directorios donde están los archivos
-directories = ["D3/2/"]
+directories = ["D3/1/"]
 # Directorio donde se guardarán los GIFs
 gif_directory = "D3/"
 
@@ -35,7 +35,7 @@ for directory in directories:
     # Definir límites de los ejes (ajusta según tus datos)
     x_min, x_max = 0, 10  # Rango para el eje x
     y_min, y_max = 0, 10  # Rango para el eje y
-    presion_min, presion_max = -0.2,0.2  # Rango para la presión (eje de color
+    presion_min, presion_max = -0.001,0.001  # Rango para la presión (eje de color
 
     # Loop sobre cada archivo y generar un gráfico
     for filename in file_list:
@@ -54,14 +54,14 @@ for directory in directories:
             presion = data[:, 2]
             
             # Crear la figura
-            plt.figure(figsize=(10, 6))
-            scatter = plt.scatter(x, y, c=presion, cmap='magma',vmin=presion_min,vmax=presion_max)
+            plt.figure(figsize=(10, 6))                                                            ##XY=36, XZ=42
+            scatter = plt.scatter(x, y, c=presion, cmap='magma',vmin=presion_min,vmax=presion_max, marker='s', s=42)
             #scatter = plt.scatter(x, y, c=presion, cmap='magma')
             plt.colorbar(scatter, label='Presión')
             plt.xlabel('x(m)')
             plt.ylabel('y(m)')
             plt.title(f'Evolución del sistema - {os.path.basename(filename)}')
-            plt.grid(True)
+            plt.grid(False)
             
             # Guardar la imagen temporalmente
             temp_filename = f"{directory}temp_{os.path.splitext(os.path.basename(filename))[0]}.png"

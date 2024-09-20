@@ -514,7 +514,7 @@ int main(void){
     for(int r=0;r<Numero_fuentes;r++){// Get a random integer between 0 and 120
         if(r<12){
             txt_number=ran64.intRange(1,3);
-            fuentes[r] = new Fuentes("Fuentes/Voz_"+txt_number+".txt", Ondas,posiciones[r][0],posiciones[r][1],Z_voz,tmax); 
+            fuentes[r] = new Fuentes("Fuentes/Voz_"+std::to_string(txt_number)+".txt", Ondas,posiciones[r].first,posiciones[r].second,Z_voz,tmax); 
         }
         else if (r==12)
         {
@@ -526,7 +526,7 @@ int main(void){
             random_number_y= ran64.intRange(3,Ly-3);
             random_number_z= ran64.intRange(h_sentado,h_parado);
             txt_number=ran64.intRange(1,3);
-            fuentes[r] = new Fuentes("Fuentes/Voz_"+txt_number+".txt", Ondas,random_number_x,random_number_y,random_number_z,tmax); 
+            fuentes[r] = new Fuentes("Fuentes/Voz_"+std::to_string(txt_number)+".txt", Ondas,random_number_x,random_number_y,random_number_z,tmax); 
 
        }
     }
