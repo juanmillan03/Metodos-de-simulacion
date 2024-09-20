@@ -15,7 +15,7 @@ const double deltax=0.1;//metro por celda
 const double Lx_real=26.5;
 const double Ly_real=19.7;
 const double LzPequeño_real=5;
-const double b_real=5;
+const double b_real=10;
 const double a_real=Lx_real/2;
 const double Lz_real=LzPequeño_real+b_real;
 //--------------------Dimensiones simulacion del recinto------
