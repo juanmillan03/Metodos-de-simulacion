@@ -6,7 +6,11 @@ import os
 import re
 
 # Lista de directorios donde están los archivos
+<<<<<<< HEAD
 directories = ["D3/1/"]
+=======
+directories = ["D3/2/"]
+>>>>>>> 2913a9a (aaa)
 # Directorio donde se guardarán los GIFs
 gif_directory = "D3/"
 
