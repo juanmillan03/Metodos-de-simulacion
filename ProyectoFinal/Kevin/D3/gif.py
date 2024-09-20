@@ -6,7 +6,15 @@ import os
 import re
 
 # Lista de directorios donde están los archivos
-directories = ["D3/4_ojito/"]
+<<<<<<< HEAD
+directories = ["D3/2/"]
+=======
+<<<<<<< HEAD
+directories = ["D3/1/"]
+=======
+directories = ["D3/2/"]
+>>>>>>> 2913a9a (aaa)
+>>>>>>> 7626d9d4ea9ae8dbf853dfa015076ec4cabd02f2
 # Directorio donde se guardarán los GIFs
 gif_directory = "D3/"
 

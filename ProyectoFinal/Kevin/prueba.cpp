@@ -10,7 +10,7 @@
 #include <sys/types.h>  // Para el tipo de datos mode_t
 
 
-const double deltax=0.1;//metro por celda
+const double deltax=0.2;//metro por celda
 //--------------------Dimensiones reales del recinto-----------
 const double Lx_real=26.5;
 const double Ly_real=19.7;
@@ -489,7 +489,7 @@ void Fuentes::ImponerFuente(int t) {
 int main(void){
 
     // Establecer el número de hilos de forma explícita
-    int num_threads = 2;
+    int num_threads =32;
     omp_set_num_threads(num_threads);
     LatticeBoltzman Ondas;
     int t;
@@ -544,12 +544,26 @@ int main(void){
             std::cout << "Imprimendo: " << t << " click "<<(double)t*deltaT<<" segundos"<< std::endl;
             // Crear la carpeta D3/z si no existe
             char directory[30];
+<<<<<<< HEAD
             sprintf(directory, "D3/%d", int((Ly_real/2)/deltax));
 
             // Crear el archivo y guardar los datos
             char filename[50];
             sprintf(filename, "D3/%d/Ondas_%d.txt", int((Ly_real/2)/deltax), int(1000*t*deltaT));
             Ondas.Print(filename, int((Ly_real/2)/deltax),plano);
+=======
+            sprintf(directory, "D3/%d", int(h_silla_real/deltax));
+	    // Verificar si el directorio existe, si no, crearlo
+            struct stat st = {0};
+            if (stat(directory, &st) == -1) {
+                mkdir(directory, 0700);  // Crear el directorio con permisos de lectura/escritura
+            }
+
+            // Crear el archivo y guardar los datos
+            char filename[50];
+            sprintf(filename, "D3/%d/Ondas_%d.txt",int(h_silla_real/deltax) , int(1000*t*deltaT));
+            Ondas.Print(filename, int(h_silla_real/deltax),plano);
+>>>>>>> 2913a9a (aaa)
         }
         std::clog << t*deltaT << "     " << Ondas.rho(Lz/2, Ly/2, Lz/2, true) << std::endl; //Lugar de medicion
     }
