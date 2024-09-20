@@ -40,7 +40,7 @@ const double y_mesaI_real=4.0;//Se le suma el radio de la mesa a la posicion ini
 const double deltax_mesa_real=2.0;
 const double deltay_mesa_real=1.0;
 const double h_sentado_real=1.3;
-const double x_sentadoI_real=x_sillaI+deltax_silla_real;
+const double x_sentadoI_real=x_sillaI_real+deltax_silla_real;
 const double h_parado_real=1.7;
 const double L_persona_real=0.5;
 //--------------------Dimensiones simulacion del resto de elementos-----------
@@ -77,18 +77,18 @@ const double x11_real=22.5;  const double y11_real=13.5;
 const double x12_real=24.5;  const double y12_real=14.5; 
 
 //--------------------------------------Posiciones simulacion persona paradas----------
-const int x1=x1_real/deltax+2;  const int y1=y1_real/deltax+2;
-const int x2=x2_real/deltax+2;  const int y2=y2_real/deltax+2;
-const int x3=x3_real/deltax+2;  const int y3=y3_real/deltax+2;
-const int x4=x4_real/deltax+2;  const int y4=y4_real/deltax+2;
-const int x5=x5_real/deltax+2;  const int y5=y5_real/deltax+2;
-const int x6=x6_real/deltax+2;  const int y6=y6_real/deltax+2;
-const int x7=x7_real/deltax+2;  const int y7=y7_real/deltax+2;
-const int x8=x8_real/deltax+2;  const int y8=y8_real/deltax+2;
-const int x9=x9_real/deltax+2;  const int y9=y9_real/deltax+2;
-const int x10=x10_real/deltax+2;  const int y10=y10_real/deltax+2;
-const int x11=x11_real/deltax+2;  const int y11=y11_real/deltax+2;
-const int x12=x12_real/deltax+2;  const int y12=y12_real/deltax+2;
+const int X1=x1_real/deltax+2;  const int Y1=y1_real/deltax+2;
+const int X2=x2_real/deltax+2;  const int Y2=y2_real/deltax+2;
+const int X3=x3_real/deltax+2;  const int Y3=y3_real/deltax+2;
+const int X4=x4_real/deltax+2;  const int Y4=y4_real/deltax+2;
+const int X5=x5_real/deltax+2;  const int Y5=y5_real/deltax+2;
+const int X6=x6_real/deltax+2;  const int Y6=y6_real/deltax+2;
+const int X7=x7_real/deltax+2;  const int Y7=y7_real/deltax+2;
+const int X8=x8_real/deltax+2;  const int Y8=y8_real/deltax+2;
+const int X9=x9_real/deltax+2;  const int Y9=y9_real/deltax+2;
+const int X10=x10_real/deltax+2;  const int Y10=y10_real/deltax+2;
+const int X11=x11_real/deltax+2;  const int Y11=y11_real/deltax+2;
+const int X12=x12_real/deltax+2;  const int Y12=y12_real/deltax+2;
 
 /*std::vector<std::pair<int, int>> posiciones = {{x1,y1}, {x2,y2}, {x3,y3}, {x4,y4}
                                                  {x5,y5}, {x6,y6}, {x7,y7}, {x8,y8}
@@ -511,9 +511,9 @@ int main(void){
     Ondas.Inicie(rho0,Jx0,Jy0,Jz0);
     
     //Corre
-    std::vector<std::pair<int, int>> posiciones = {{x1,y1}, {x2,y2}, {x3,y3}, {x4,y4},
-                                                   {x5,y5}, {x6,y6}, {x7,y7}, {x8,y8},
-                                                   {x9,y9}, {x10,y10}, {x11,y11}, {x12,y12}};
+    std::vector<std::pair<int, int>> posiciones = {{X1,Y1}, {X2,Y2}, {X3,Y3}, {X4,Y4},
+                                                   {X5,Y5}, {X6,Y6}, {X7,Y7}, {X8,Y8},
+                                                   {X9,Y9}, {X10,Y10}, {X11,Y11}, {X12,Y12}};
 
     auto start = std::chrono::high_resolution_clock::now(); // Start timer
     // Fuentes
