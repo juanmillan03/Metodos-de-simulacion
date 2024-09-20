@@ -6,7 +6,7 @@ import os
 import re
 
 # Lista de directorios donde están los archivos
-directories = ["D3/1/"]
+directories = ["D3/4_ojito/"]
 # Directorio donde se guardarán los GIFs
 gif_directory = "D3/"
 
@@ -35,7 +35,7 @@ for directory in directories:
     # Definir límites de los ejes (ajusta según tus datos)
     x_min, x_max = 0, 10  # Rango para el eje x
     y_min, y_max = 0, 10  # Rango para el eje y
-    presion_min, presion_max = -0.001,0.001  # Rango para la presión (eje de color
+    presion_min, presion_max = -0.0005,0.0005  # Rango para la presión (eje de color
 
     # Loop sobre cada archivo y generar un gráfico
     for filename in file_list:
