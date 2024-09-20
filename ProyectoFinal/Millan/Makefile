@@ -27,6 +27,5 @@ LBD3Q7_M:
 	python3 D3/gif.py
 LBD3Q7_maxwell: 
 	g++ -O3 -fopenmp  LBD3Q7_millan_maxwell.cpp -o LBMM
-	OMP_NUM_THREADS=32 ./LBMM 2>Data3.txt
+	OMP_NUM_THREADS=32 ./LBMM 2>Data_Ap.txt
 	python3 D3_maxwell/gif.py
-	catimg D3_maxwell/evolucion_sistema_4.gif

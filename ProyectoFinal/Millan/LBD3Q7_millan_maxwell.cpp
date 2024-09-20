@@ -10,7 +10,7 @@
 #include <sys/types.h>  // Para el tipo de datos mode_t
 
 
-const double deltax=0.3;//metro por celda
+const double deltax=0.1;//metro por celda
 //--------------------Dimensiones reales del recinto-----------
 const double Lx_real=26.5;
 const double Ly_real=19.7;
@@ -479,7 +479,7 @@ int main(void){
     omp_set_num_threads(num_threads);
     LatticeBoltzman Ondas;
     int t;
-    double tmax=10.0;//segundos 
+    double tmax=8.0;//segundos 
     double rho0=0.0, Jx0=0, Jy0=0, Jz0=0;
     bool plano=false;
 
@@ -504,7 +504,7 @@ int main(void){
     auto start = std::chrono::high_resolution_clock::now(); // Start timer
     // Fuentes
     Crandom ran64(23);
-    const int Numero_fuentes=50;
+    const int Numero_fuentes=1;
     Fuentes* fuentes[Numero_fuentes];
     int random_number_x;
     int random_number_y;
@@ -514,7 +514,7 @@ int main(void){
     for(int r=0;r<Numero_fuentes;r++){// Get a random integer between 0 and 120
         if(r<12){
             txt_number=ran64.intRange(1,3);
-            fuentes[r] = new Fuentes("Fuentes/Voz_"+std::to_string(txt_number)+".txt", Ondas,posiciones[r].first,posiciones[r].second,Z_voz,tmax); 
+            fuentes[r] = new Fuentes("Fuentes/Aplauso.txt",Ondas, X1,Y1,Z_voz,tmax); 
         }
         else if (r==12)
         {
@@ -538,11 +538,11 @@ int main(void){
             fuentes[r]->ImponerFuente(t);
         }
         Ondas.Adveccion();
-        if(t % int(1/deltaT) == 0){
+        if(t % int(0.4/deltaT) == 0){
             std::cout << "Imprimendo: " << t << " click "<<(double)t*deltaT<<" segundos"<< std::endl;
             // Crear la carpeta D3/z si no existe
             char directory[30];
-            sprintf(directory, "D3_maxwell/%d", 3);
+            sprintf(directory, "D3_maxwell/Ap_xz" );
 
             struct stat st = {0};
             if (stat(directory, &st) == -1) {
@@ -551,10 +551,10 @@ int main(void){
 
             // Crear el archivo y guardar los datos
             char filename[50];
-            sprintf(filename, "D3_maxwell/%d/Ondas_%d.txt", 3, int(1000*t*deltaT));
-            Ondas.Print(filename, Lz/2,plano);
+            sprintf(filename, "D3_maxwell/Ap_xz/Ondas_%d.txt", int(1000*t*deltaT));
+            Ondas.Print(filename, Ly/2,true);
         }
-        std::clog << t*deltaT << "     " << Ondas.rho(Lx/2+5, Ly/2,Z_voz, true) << std::endl; //Lugar de medicion
+        std::clog << t*deltaT << "     " << Ondas.rho(Lx/2, Ly/2,Z_voz, true) << std::endl; //Lugar de medicion
     }
 
 
