@@ -542,7 +542,7 @@ int main(void){
             std::cout << "Imprimendo: " << t << " click "<<(double)t*deltaT<<" segundos"<< std::endl;
             // Crear la carpeta D3/z si no existe
             char directory[30];
-            sprintf(directory, "D3_maxwell/Ap" );
+            sprintf(directory, "D3_maxwell/Ap_xz" );
 
             struct stat st = {0};
             if (stat(directory, &st) == -1) {
@@ -551,8 +551,8 @@ int main(void){
 
             // Crear el archivo y guardar los datos
             char filename[50];
-            sprintf(filename, "D3_maxwell/Ap/Ondas_%d.txt", int(1000*t*deltaT));
-            Ondas.Print(filename, Lz/2,false);
+            sprintf(filename, "D3_maxwell/Ap_xz/Ondas_%d.txt", int(1000*t*deltaT));
+            Ondas.Print(filename, Ly/2,true);
         }
         std::clog << t*deltaT << "     " << Ondas.rho(Lx/4, Ly/2,Z_voz, true) << std::endl; //Lugar de medicion
     }
