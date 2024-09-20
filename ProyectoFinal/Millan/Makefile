@@ -23,7 +23,7 @@ D2Q5:
 LBD3Q7_M: 
 	g++ -O3 -fopenmp  LBD3Q7_millan.cpp -o LBM
 	find D3/* -type d -exec rm -rf {} +
-	OMP_NUM_THREADS=4 ./LBM 2>Data.txt
+	OMP_NUM_THREADS=2 ./LBM 2>Data.txt
 	python3 D3/gif.py
 LBD3Q7_maxwell: 
 	g++ -O3 -fopenmp  LBD3Q7_millan_maxwell.cpp -o LBMM
