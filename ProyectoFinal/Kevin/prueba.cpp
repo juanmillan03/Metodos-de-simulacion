@@ -10,7 +10,7 @@
 #include <sys/types.h>  // Para el tipo de datos mode_t
 
 
-const double deltax=0.1;//metro por celda
+const double deltax=0.2;//metro por celda
 //--------------------Dimensiones reales del recinto-----------
 const double Lx_real=19.7;
 const double Ly_real=26.5;
@@ -31,15 +31,16 @@ const double h_silla_real=0.4;
 const double L_silla_real=0.4;
 const double x_sillaI_real=3.0;
 const double y_sillaI_real=4.0;
-const double deltax_silla_real=0.7;
-const double deltay_silla_real=2*deltax_silla_real;
+const double deltax_silla_real=1.0;
+const double deltay_silla_real=1.0;
 const double h_mesa_real=0.65;
 const double L_mesa_real=0.6;
-const double x_mesaI_real=3.0+0.3;//Se le suma el radio de la mesa a la posicion inicial de la silla
-const double y_mesaI_real=4.0+0.3;//Se le suma el radio de la mesa a la posicion inicial de la silla
-const double deltax_mesa_real=2*deltax_silla_real;
-const double deltay_mesa_real=2*deltax_silla_real;
+const double x_mesaI_real=3.5;//Se le suma el radio de la mesa a la posicion inicial de la silla
+const double y_mesaI_real=4.0;//Se le suma el radio de la mesa a la posicion inicial de la silla
+const double deltax_mesa_real=2.0;
+const double deltay_mesa_real=1.0;
 const double h_sentado_real=1.3;
+const double x_sentadoI_real=x_sillaI+deltax_silla_real;
 const double h_parado_real=1.7;
 const double L_persona_real=0.5;
 //--------------------Dimensiones simulacion del resto de elementos-----------
@@ -56,9 +57,43 @@ const int y_mesaI=y_mesaI_real/deltax+2;
 const int deltax_mesa=deltax_mesa_real/deltax;
 const int deltay_mesa=deltay_mesa_real/deltax;
 const int h_sentado=h_sentado_real/deltax+2;
+const int x_sentadoI=x_sentadoI_real/deltax+2;
 const int h_parado=h_parado_real/deltax+2;
 const int L_persona=L_persona_real/deltax;
 
+//--------------------------------------Posiciones reales persona paradas----------
+
+const double x1_real=2.5;  const double y1_real=3.5; 
+const double x2_real=4.5;  const double y2_real=4.5; 
+const double x3_real=6.5;  const double y3_real=5.5; 
+const double x4_real=8.5;  const double y4_real=6.5; 
+const double x5_real=10.5;  const double y5_real=7.5; 
+const double x6_real=12.5;  const double y6_real=8.5; 
+const double x7_real=14.5;  const double y7_real=9.5; 
+const double x8_real=16.5;  const double y8_real=10.5; 
+const double x9_real=18.5;  const double y9_real=11.5; 
+const double x10_real=20.5;  const double y10_real=12.5; 
+const double x11_real=22.5;  const double y11_real=13.5; 
+const double x12_real=24.5;  const double y12_real=14.5; 
+
+//--------------------------------------Posiciones simulacion persona paradas----------
+const int x1=x1_real/deltax+2;  const int y1=y1_real/deltax+2;
+const int x2=x2_real/deltax+2;  const int y2=y2_real/deltax+2;
+const int x3=x3_real/deltax+2;  const int y3=y3_real/deltax+2;
+const int x4=x4_real/deltax+2;  const int y4=y4_real/deltax+2;
+const int x5=x5_real/deltax+2;  const int y5=y5_real/deltax+2;
+const int x6=x6_real/deltax+2;  const int y6=y6_real/deltax+2;
+const int x7=x7_real/deltax+2;  const int y7=y7_real/deltax+2;
+const int x8=x8_real/deltax+2;  const int y8=y8_real/deltax+2;
+const int x9=x9_real/deltax+2;  const int y9=y9_real/deltax+2;
+const int x10=x10_real/deltax+2;  const int y10=y10_real/deltax+2;
+const int x11=x11_real/deltax+2;  const int y11=y11_real/deltax+2;
+const int x12=x12_real/deltax+2;  const int y12=y12_real/deltax+2;
+
+/*std::vector<std::pair<int, int>> posiciones = {{x1,y1}, {x2,y2}, {x3,y3}, {x4,y4}
+                                                 {x5,y5}, {x6,y6}, {x7,y7}, {x8,y8}
+                                                 {x9,y9}, {x10,y10}, {x11,y11}, {x12,y12}};
+*/
 
 
 const int Q=7;
@@ -198,8 +233,8 @@ bool LatticeBoltzman::Silla(int ix, int iy, int iz){
     // Verificamos si está en el rango correcto para iz
     if (iz > 1 && iz <= h_silla) {
         // Recorremos los desplazamientos en x e y para evaluar las posiciones
-        for (int dx = 0; dx <= 10; ++dx) {
-            for (int dy = 0; dy <= 5; ++dy) {
+        for (int dx = 0; dx <= 19; ++dx) {
+            for (int dy = 0; dy <= 10; ++dy) {
                 double x_shift = x_sillaI + dx * deltax_silla;
                 double y_shift = y_sillaI + dy * deltay_silla;
 
@@ -222,8 +257,8 @@ bool LatticeBoltzman::Mesa(int ix, int iy, int iz){
     // Verificamos si está en el rango correcto para iz
     if (iz > 1 && iz <= h_mesa) {
         // Recorremos los desplazamientos en x e y para evaluar las posiciones
-        for (int dx = 0; dx <= 5; ++dx) {
-            for (int dy = 0; dy <= 5; ++dy) {
+        for (int dx = 0; dx <= 9; ++dx) {
+            for (int dy = 0; dy <= 10; ++dy) {
                 double x_shift = x_mesaI + dx * deltax_mesa;
                 double y_shift = y_mesaI + dy * deltay_mesa;
 
@@ -264,9 +299,9 @@ bool LatticeBoltzman::Sentadas(int ix, int iy, int iz){
     // Verificamos si está en el rango correcto para iz
     if (iz > h_silla && iz <= h_sentado) {
         // Recorremos los desplazamientos en x e y para evaluar las posiciones
-        for (int dx = 0; dx <= 10; ++dx) {
-            for (int dy = 0; dy <= 5; ++dy) {
-                double x_shift = x_sillaI + dx * deltax_silla;
+        for (int dx = 0; dx <= 9; ++dx) {
+            for (int dy = 0; dy <= 10; ++dy) {
+                double x_shift = x_sentadoI + dx * deltax_silla;
                 double y_shift = y_sillaI + dy * deltay_silla;
 
                 // Comprobamos si la posición (ix, iy) está dentro del radio r2
@@ -323,7 +358,7 @@ void LatticeBoltzman::Inicie(double rho0, double Jx0, double Jy0, double Jz0){
 }
 void LatticeBoltzman::Colision(const std::vector<std::pair<int, int>>& posiciones){
     int ix, iy, iz, i, n0, n1, n2, n3, n4, n5, n6; double rho0, Jx0, Jy0, Jz0;
-    #pragma omp parallel for collapse(3) private(ix, iy, iz, i, n0, n1, n2, n3, n4, n5, n6, rho0, Jx0, Jy0, Jz0) 
+    #pragma omp parallel for collapse(2) private(ix, iy, iz, i, n0, n1, n2, n3, n4, n5, n6, rho0, Jx0, Jy0, Jz0) schedule(auto) 
     for(ix=0;ix<Lx;ix++)      //Para cada celda
         for(iy=0;iy<Ly;iy++)
             for(iz=0;iz<Lz;iz++){
@@ -360,6 +395,7 @@ void LatticeBoltzman::ImponerCampos(int t){
 }
 void LatticeBoltzman::Adveccion(void){
     int ix, iy, iz, i, ixnext, iynext, iznext, n0, n0next;
+    #pragma omp parallel for private(ix, iy, iz, i, ixnext, iynext, iznext, n0, n0next) schedule(auto)
     for(ix=0;ix<Lx;ix++)      //Para cada celda
         for(iy=0;iy<Ly;iy++)
             for(iz=0;iz<Lz;iz++)
@@ -475,7 +511,9 @@ int main(void){
     Ondas.Inicie(rho0,Jx0,Jy0,Jz0);
     
     //Corre
-    std::vector<std::pair<int, int>> posiciones = {{10, 20}, {15, 25}, {30, 35}};
+    std::vector<std::pair<int, int>> posiciones = {{x1,y1}, {x2,y2}, {x3,y3}, {x4,y4},
+                                                   {x5,y5}, {x6,y6}, {x7,y7}, {x8,y8},
+                                                   {x9,y9}, {x10,y10}, {x11,y11}, {x12,y12}};
 
     auto start = std::chrono::high_resolution_clock::now(); // Start timer
     // Fuentes
@@ -506,11 +544,11 @@ int main(void){
             std::cout << "Imprimendo: " << t << " click "<<(double)t*deltaT<<" segundos"<< std::endl;
             // Crear la carpeta D3/z si no existe
             char directory[30];
-            sprintf(directory, "D3/%d", int(4));
+            sprintf(directory, "D3/%d", int(h_silla_real/deltax));
 
             // Crear el archivo y guardar los datos
             char filename[50];
-            sprintf(filename, "D3/%d/Ondas_%d.txt", int(4), int(1000*t*deltaT));
+            sprintf(filename, "D3/%d/Ondas_%d.txt", int(h_silla_real/deltax), int(1000*t*deltaT));
             Ondas.Print(filename, int(h_silla_real/deltax),plano);
         }
         std::clog << t*deltaT << "     " << Ondas.rho(Lz/2, Ly/2, Lz/2, true) << std::endl; //Lugar de medicion
