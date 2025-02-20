@@ -15,7 +15,7 @@ const double deltax=0.1;//metro por celda
 const double Lx_real=26.5;
 const double Ly_real=19.7;
 const double LzPequeño_real=5;
-const double b_real=10;
+const double b_real=0.0;
 const double a_real=Lx_real/2;
 const double Lz_real=LzPequeño_real+b_real;
 //--------------------Dimensiones simulacion del recinto------
@@ -481,7 +481,7 @@ int main(void){
     int t;
     double tmax=6.0;//segundos 
     double rho0=0.0, Jx0=0, Jy0=0, Jz0=0;
-    bool plano=false;
+    bool plano=true;
 
     // Imprimir la cantidad de celdas en cada eje y los valores de deltax y deltaT
     std::cout << "Cantidad de celdas en el eje X (Lx): " << Lx << std::endl;
@@ -540,21 +540,21 @@ int main(void){
         Ondas.Adveccion();
         if(t % int(0.4/deltaT) == 0){
             std::cout << "Imprimendo: " << t << " click "<<(double)t*deltaT<<" segundos"<< std::endl;
-            // // Crear la carpeta D3/z si no existe
-            // char directory[30];
-            // sprintf(directory, "D3_maxwell/Ap_xz" );
+            // Crear la carpeta D3/z si no existe
+            char directory[30];
+            sprintf(directory, "D3_maxwell/Sin_Techo" );
 
-            // struct stat st = {0};
-            // if (stat(directory, &st) == -1) {
-            //     mkdir(directory, 0700);  // Crear el directorio con permisos de lectura/escritura
-            // }
+            struct stat st = {0};
+            if (stat(directory, &st) == -1) {
+                 mkdir(directory, 0700);  // Crear el directorio con permisos de lectura/escritura
+            }
 
-            // // Crear el archivo y guardar los datos
-            // char filename[50];
-            // sprintf(filename, "D3_maxwell/Ap_xz/Ondas_%d.txt", int(1000*t*deltaT));
-            // Ondas.Print(filename, Ly/2,true);
+            // Crear el archivo y guardar los datos
+            char filename[50];
+            sprintf(filename, "D3_maxwell/Sin_Techo/Ondas_%d.txt", int(1000*t*deltaT));
+            Ondas.Print(filename, Ly/2,plano);
          }
-        std::clog << t*deltaT << "     " << Ondas.rho(Lx/4, Ly/2,Z_voz, true) << std::endl; //Lugar de medicion
+        //std::clog << t*deltaT << "     " << Ondas.rho(Lx/4, Ly/2,Z_voz, true) << std::endl; //Lugar de medicion
     }
 
 
