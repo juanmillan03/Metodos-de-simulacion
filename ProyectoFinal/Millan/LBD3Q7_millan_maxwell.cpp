@@ -15,7 +15,7 @@ const double deltax=0.1;//metro por celda
 const double Lx_real=26.5;
 const double Ly_real=19.7;
 const double LzPequeño_real=5;
-const double b_real=0.0;
+const double b_real=3.0;
 const double a_real=Lx_real/2;
 const double Lz_real=LzPequeño_real+b_real;
 //--------------------Dimensiones simulacion del recinto------
@@ -479,7 +479,7 @@ int main(void){
     omp_set_num_threads(num_threads);
     LatticeBoltzman Ondas;
     int t;
-    double tmax=5.0;//segundos 
+    double tmax=4.0;//segundos 
     double rho0=0.0, Jx0=0, Jy0=0, Jz0=0;
     bool plano=true;
 
@@ -538,11 +538,11 @@ int main(void){
             fuentes[r]->ImponerFuente(t);
         }
         Ondas.Adveccion();
-        if(t % int(0.2/deltaT) == 0){
+        if(t % int(0.1/deltaT) == 0){
             std::cout << "Imprimendo: " << t << " click "<<(double)t*deltaT<<" segundos"<< std::endl;
             // Crear la carpeta D3/z si no existe
             char directory[30];
-            sprintf(directory, "D3_maxwell/Sin_Techo" );
+            sprintf(directory, "D3_maxwell/3_Techo" );
 
             struct stat st = {0};
             if (stat(directory, &st) == -1) {
@@ -551,7 +551,7 @@ int main(void){
 
             // Crear el archivo y guardar los datos
             char filename[50];
-            sprintf(filename, "D3_maxwell/Sin_Techo/Ondas_%d.txt", int(1000*t*deltaT));
+            sprintf(filename, "D3_maxwell/3_Techo/Ondas_%d.txt", int(1000*t*deltaT));
             Ondas.Print(filename, Ly/2,plano);
          }
         //std::clog << t*deltaT << "     " << Ondas.rho(Lx/4, Ly/2,Z_voz, true) << std::endl; //Lugar de medicion
