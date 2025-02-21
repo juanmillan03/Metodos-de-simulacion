@@ -479,7 +479,7 @@ int main(void){
     omp_set_num_threads(num_threads);
     LatticeBoltzman Ondas;
     int t;
-    double tmax=6.0;//segundos 
+    double tmax=5.0;//segundos 
     double rho0=0.0, Jx0=0, Jy0=0, Jz0=0;
     bool plano=true;
 
@@ -538,7 +538,7 @@ int main(void){
             fuentes[r]->ImponerFuente(t);
         }
         Ondas.Adveccion();
-        if(t % int(0.4/deltaT) == 0){
+        if(t % int(0.2/deltaT) == 0){
             std::cout << "Imprimendo: " << t << " click "<<(double)t*deltaT<<" segundos"<< std::endl;
             // Crear la carpeta D3/z si no existe
             char directory[30];
